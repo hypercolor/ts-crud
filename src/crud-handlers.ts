@@ -189,9 +189,9 @@ export class CrudHandlers {
  * @returns {Promise|*}
  */
 function handlePostForJsonObject<T extends PostgresModel<T>>(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest) {
-  if (!req.user){
-    return Promise.reject({code: 500, error: 'Request had no user.'});
-  } else {
+  // if (!req.user){
+  //   return Promise.reject({code: 500, error: 'Request had no user.'});
+  // } else {
     jsonObject = jsonObject || {};
     // if (((new model().columns) as any)['userId']) {
     //   jsonObject.userId = jsonObject.userId || req.user.id;
@@ -208,7 +208,7 @@ function handlePostForJsonObject<T extends PostgresModel<T>>(model: IPostgresMod
         });
       }
     });
-  }
+  // }
 }
 
 /**

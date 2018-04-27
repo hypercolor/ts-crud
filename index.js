@@ -313,28 +313,27 @@ var CrudHandlers = (function () {
  * @returns {Promise|*}
  */
 function handlePostForJsonObject(model, jsonObject, req) {
-    if (!req.user) {
-        return Promise.reject({ code: 500, error: 'Request had no user.' });
-    }
-    else {
-        jsonObject = jsonObject || {};
-        // if (((new model().columns) as any)['userId']) {
-        //   jsonObject.userId = jsonObject.userId || req.user.id;
-        // }
-        var object_1 = new model(jsonObject);
-        return object_1.saveForUser(req.user)
-            .then(function (savedObject) {
-            if (req.query.p === undefined) {
-                return Promise.resolve(savedObject);
-            }
-            else {
-                return validateFetchOptions(model, req.query.p)
-                    .then(function (fetchOptions) {
-                    return new model().where({ id: object_1.id }).fetchForUser(req.user, { withRelated: fetchOptions });
-                });
-            }
-        });
-    }
+    // if (!req.user){
+    //   return Promise.reject({code: 500, error: 'Request had no user.'});
+    // } else {
+    jsonObject = jsonObject || {};
+    // if (((new model().columns) as any)['userId']) {
+    //   jsonObject.userId = jsonObject.userId || req.user.id;
+    // }
+    var object = new model(jsonObject);
+    return object.saveForUser(req.user)
+        .then(function (savedObject) {
+        if (req.query.p === undefined) {
+            return Promise.resolve(savedObject);
+        }
+        else {
+            return validateFetchOptions(model, req.query.p)
+                .then(function (fetchOptions) {
+                return new model().where({ id: object.id }).fetchForUser(req.user, { withRelated: fetchOptions });
+            });
+        }
+    });
+    // }
 }
 /**
  * Fetch an object for a req.
