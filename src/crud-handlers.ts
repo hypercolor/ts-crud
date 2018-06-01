@@ -196,8 +196,8 @@ function handlePostForJsonObject<T extends PostgresModel<T>>(model: IPostgresMod
     // if (((new model().columns) as any)['userId']) {
     //   jsonObject.userId = jsonObject.userId || req.user.id;
     // }
-    const object = new model(jsonObject);
-    return object.saveForUser(req.user)
+    const object = new model();
+    return object.updateWithParams(jsonObject, req.user)
     .then(savedObject => {
       if (req.query.p === undefined) {
         return Promise.resolve(savedObject);

@@ -320,8 +320,8 @@ function handlePostForJsonObject(model, jsonObject, req) {
     // if (((new model().columns) as any)['userId']) {
     //   jsonObject.userId = jsonObject.userId || req.user.id;
     // }
-    var object = new model(jsonObject);
-    return object.saveForUser(req.user)
+    var object = new model();
+    return object.updateWithParams(jsonObject, req.user)
         .then(function (savedObject) {
         if (req.query.p === undefined) {
             return Promise.resolve(savedObject);

@@ -1,6 +1,6 @@
 {
   "name": "ts-crud",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Helper classes and handlers for CRUD routes / actions using the ts-postgres-model and ts-express-controller frameworks",
   "main": "index.js",
   "types": "index.d.ts",
@@ -135,6 +135,6 @@
   "dependencies": {
     "p-queue": "2.4.1",
     "ts-express-controller": "0.1.2",
-    "ts-postgres-model": "0.1.3"
+    "ts-postgres-model": "0.1.8"
   }
 }
