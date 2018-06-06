@@ -6665,9 +6665,9 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
 
-ts-express-controller@0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/ts-express-controller/-/ts-express-controller-0.1.2.tgz#b28ac67bede15711e985cc4f3ee76edb22b270eb"
+ts-express-controller@0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/ts-express-controller/-/ts-express-controller-0.1.5.tgz#4ab4adbea78d7592adbde372fa2ece71080dc503"
   dependencies:
     "@types/bluebird" "3.5.20"
     bluebird "3.5.1"

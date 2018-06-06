@@ -45,12 +45,34 @@ export class PutByIdRoute<T extends PostgresModel<T>> extends Controller {
 }
 
 /**
+ * Default PATCH by ID from request JSON body
+ */
+export class PatchByIdRoute<T extends PostgresModel<T>> extends Controller {
+  constructor(private _type: IPostgresModelClass<any>, private idParamName: string) {super({
+    routeParams: [idParamName]
+  });}
+  protected handleRequest(params: any, req: IUserRequest, res: Response) {
+    return CrudHandlers.patchObject(req, this._type, params[this.idParamName]);
+  }
+}
+
+/**
  * Default PUT by ID from request JSON body
  */
 export class MultiPutRoute<T extends PostgresModel<T>> extends Controller {
   constructor(private _type: IPostgresModelClass<any>) {super();}
   protected handleRequest(params: any, req: IUserRequest, res: Response) {
     return CrudHandlers.putObjects(req, this._type);
+  }
+}
+
+/**
+ * Default PUT by ID from request JSON body
+ */
+export class MultiPatchRoute<T extends PostgresModel<T>> extends Controller {
+  constructor(private _type: IPostgresModelClass<any>) {super();}
+  protected handleRequest(params: any, req: IUserRequest, res: Response) {
+    return CrudHandlers.patchObjects(req, this._type);
   }
 }
 

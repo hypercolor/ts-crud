@@ -53,6 +53,12 @@ export class CrudHandlers {
     return this.handlePutForJsonObject(model, req.body, req);
   }
 
+
+  public static patchObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number) {
+    req.body.id = objectId;
+    return this.handlePatchForJsonObject(model, req.body, req);
+  }
+
   public static putObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>): Promise<T | Collection<T>> {
     if (req.body.constructor === Array) {
       const queue = new PromiseQueue(1);
@@ -63,6 +69,19 @@ export class CrudHandlers {
       }));
     } else {
       return this.handlePutForJsonObject(model, req.body, req);
+    }
+  }
+
+  public static patchObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>): Promise<T | Collection<T>> {
+    if (req.body.constructor === Array) {
+      const queue = new PromiseQueue(1);
+      return queue.runAllPromiseFunctions(req.body.map((jsonObject: any) => {
+        return () => {
+          return this.handlePatchForJsonObject(model, jsonObject, req);
+        };
+      }));
+    } else {
+      return this.handlePatchForJsonObject(model, req.body, req);
     }
   }
 
@@ -107,6 +126,41 @@ export class CrudHandlers {
   }
 
   public static handlePutForJsonObject<T extends PostgresModel<T>>(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, transaction?: Transaction): Promise<T> {
+    if (jsonObject.id === undefined || jsonObject.id === '') {
+      return handlePostForJsonObject(model, jsonObject, req);
+    } else {
+      return this.fetchObjectForRequest(req, model, jsonObject.id)
+      .then((object: T) => {
+        if (object === null) {
+          return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + jsonObject.id});
+        } else {
+
+          // For PUT requests, we want to clear out any existing data, then update from the request
+          Object.values(object.columns).forEach(columnName => {
+            object[columnName] = null;
+          });
+
+          if (transaction){
+            return object.updateWithParams(jsonObject, req.user, {transacting: transaction});
+          } else {
+            return object.updateWithParams(jsonObject, req.user);
+          }
+        }
+      })
+      .then((object: T) => {
+        if (req.query.p === undefined) {
+          return Promise.resolve(object);
+        } else {
+          return validateFetchOptions(model, req.query.p)
+          .then((fetchOptions: any) => {
+            return new model().where({id: object.id}).fetchForUser(req.user, {withRelated: fetchOptions});
+          });
+        }
+      });
+    }
+  }
+
+  public static handlePatchForJsonObject<T extends PostgresModel<T>>(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, transaction?: Transaction): Promise<T> {
     if (jsonObject.id === undefined || jsonObject.id === '') {
       return handlePostForJsonObject(model, jsonObject, req);
     } else {

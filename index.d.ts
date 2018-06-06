@@ -36,9 +36,23 @@ export class PutByIdRoute<T extends PostgresModel<T>> extends Controller {
         protected handleRequest(params: any, req: IUserRequest, res: Response): Promise<any>;
 }
 /**
+    * Default PATCH by ID from request JSON body
+    */
+export class PatchByIdRoute<T extends PostgresModel<T>> extends Controller {
+        constructor(_type: IPostgresModelClass<any>, idParamName: string);
+        protected handleRequest(params: any, req: IUserRequest, res: Response): Promise<any>;
+}
+/**
     * Default PUT by ID from request JSON body
     */
 export class MultiPutRoute<T extends PostgresModel<T>> extends Controller {
+        constructor(_type: IPostgresModelClass<any>);
+        protected handleRequest(params: any, req: IUserRequest, res: Response): Promise<any>;
+}
+/**
+    * Default PUT by ID from request JSON body
+    */
+export class MultiPatchRoute<T extends PostgresModel<T>> extends Controller {
         constructor(_type: IPostgresModelClass<any>);
         protected handleRequest(params: any, req: IUserRequest, res: Response): Promise<any>;
 }
@@ -74,11 +88,18 @@ export class CrudHandlers {
     static postFromRequestBody<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>): Promise<any>;
     static getObjectById<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
     static putObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
+    static patchObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
     static putObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>): Promise<T | Collection<T>>;
+    static patchObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>): Promise<T | Collection<T>>;
     static deleteObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<void>;
     static setObjectDeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
     static setObjectUndeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
     static handlePutForJsonObject<T extends PostgresModel<T>>(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, transaction?: Transaction): Promise<T>;
+    static handlePatchForJsonObject<T extends PostgresModel<T>>(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, transaction?: Transaction): Promise<T>;
     static fetchObjectForRequest<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, id: number, fetchParams?: any): Promise<T>;
+}
+
+export class CrudConfig {
+    setControllerConfig(name: string, description: string, version: string): void;
 }
 

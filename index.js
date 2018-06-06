@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, PutByIdRoute, QueryRoute, CrudHandlers */
+/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, MultiPatchRoute, PutByIdRoute, QueryRoute, PatchByIdRoute, CrudHandlers, CrudConfig */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -109,15 +109,52 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiPutRoute", function() { return _src_crud_routes__WEBPACK_IMPORTED_MODULE_0__["MultiPutRoute"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MultiPatchRoute", function() { return _src_crud_routes__WEBPACK_IMPORTED_MODULE_0__["MultiPatchRoute"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PutByIdRoute", function() { return _src_crud_routes__WEBPACK_IMPORTED_MODULE_0__["PutByIdRoute"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "QueryRoute", function() { return _src_crud_routes__WEBPACK_IMPORTED_MODULE_0__["QueryRoute"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PatchByIdRoute", function() { return _src_crud_routes__WEBPACK_IMPORTED_MODULE_0__["PatchByIdRoute"]; });
+
 /* harmony import */ var _src_crud_handlers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/crud-handlers */ "./src/crud-handlers.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CrudHandlers", function() { return _src_crud_handlers__WEBPACK_IMPORTED_MODULE_1__["CrudHandlers"]; });
 
+/* harmony import */ var _src_crud_config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/crud-config */ "./src/crud-config.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CrudConfig", function() { return _src_crud_config__WEBPACK_IMPORTED_MODULE_2__["CrudConfig"]; });
 
 
+
+
+
+
+
+/***/ }),
+
+/***/ "./src/crud-config.ts":
+/*!****************************!*\
+  !*** ./src/crud-config.ts ***!
+  \****************************/
+/*! exports provided: CrudConfig */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CrudConfig", function() { return CrudConfig; });
+/* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ts-express-controller */ "ts-express-controller");
+/* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(ts_express_controller__WEBPACK_IMPORTED_MODULE_0__);
+
+
+var CrudConfig = (function () {
+    function CrudConfig() {
+    }
+    CrudConfig.prototype.setControllerConfig = function (name, description, version) {
+        ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageName = name;
+        ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageDescription = description;
+        ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageVersion = version;
+    };
+    return CrudConfig;
+}());
 
 
 
@@ -174,6 +211,10 @@ var CrudHandlers = (function () {
         req.body.id = objectId;
         return this.handlePutForJsonObject(model, req.body, req);
     };
+    CrudHandlers.patchObject = function (req, model, objectId) {
+        req.body.id = objectId;
+        return this.handlePatchForJsonObject(model, req.body, req);
+    };
     CrudHandlers.putObjects = function (req, model) {
         var _this = this;
         if (req.body.constructor === Array) {
@@ -186,6 +227,20 @@ var CrudHandlers = (function () {
         }
         else {
             return this.handlePutForJsonObject(model, req.body, req);
+        }
+    };
+    CrudHandlers.patchObjects = function (req, model) {
+        var _this = this;
+        if (req.body.constructor === Array) {
+            var queue = new _promise_queue__WEBPACK_IMPORTED_MODULE_0__["PromiseQueue"](1);
+            return queue.runAllPromiseFunctions(req.body.map(function (jsonObject) {
+                return function () {
+                    return _this.handlePatchForJsonObject(model, jsonObject, req);
+                };
+            }));
+        }
+        else {
+            return this.handlePatchForJsonObject(model, req.body, req);
         }
     };
     CrudHandlers.deleteObject = function (req, model, objectId) {
@@ -229,6 +284,42 @@ var CrudHandlers = (function () {
         });
     };
     CrudHandlers.handlePutForJsonObject = function (model, jsonObject, req, transaction) {
+        if (jsonObject.id === undefined || jsonObject.id === '') {
+            return handlePostForJsonObject(model, jsonObject, req);
+        }
+        else {
+            return this.fetchObjectForRequest(req, model, jsonObject.id)
+                .then(function (object) {
+                if (object === null) {
+                    return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + jsonObject.id });
+                }
+                else {
+                    // For PUT requests, we want to clear out any existing data, then update from the request
+                    Object.values(object.columns).forEach(function (columnName) {
+                        object[columnName] = null;
+                    });
+                    if (transaction) {
+                        return object.updateWithParams(jsonObject, req.user, { transacting: transaction });
+                    }
+                    else {
+                        return object.updateWithParams(jsonObject, req.user);
+                    }
+                }
+            })
+                .then(function (object) {
+                if (req.query.p === undefined) {
+                    return Promise.resolve(object);
+                }
+                else {
+                    return validateFetchOptions(model, req.query.p)
+                        .then(function (fetchOptions) {
+                        return new model().where({ id: object.id }).fetchForUser(req.user, { withRelated: fetchOptions });
+                    });
+                }
+            });
+        }
+    };
+    CrudHandlers.handlePatchForJsonObject = function (model, jsonObject, req, transaction) {
         if (jsonObject.id === undefined || jsonObject.id === '') {
             return handlePostForJsonObject(model, jsonObject, req);
         }
@@ -433,7 +524,7 @@ function parseFetchOptions(fetchOptionsString) {
 /*!****************************!*\
   !*** ./src/crud-routes.ts ***!
   \****************************/
-/*! exports provided: GetRoute, PostRoute, PutByIdRoute, MultiPutRoute, DeleteRoute, QueryRoute, MarkDeletedRoute, MarkUndeletedRoute */
+/*! exports provided: GetRoute, PostRoute, PutByIdRoute, PatchByIdRoute, MultiPutRoute, MultiPatchRoute, DeleteRoute, QueryRoute, MarkDeletedRoute, MarkUndeletedRoute */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -441,7 +532,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GetRoute", function() { return GetRoute; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PostRoute", function() { return PostRoute; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PutByIdRoute", function() { return PutByIdRoute; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PatchByIdRoute", function() { return PatchByIdRoute; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiPutRoute", function() { return MultiPutRoute; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiPatchRoute", function() { return MultiPatchRoute; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DeleteRoute", function() { return DeleteRoute; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QueryRoute", function() { return QueryRoute; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MarkDeletedRoute", function() { return MarkDeletedRoute; });
@@ -520,6 +613,25 @@ var PutByIdRoute = (function (_super) {
 }(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
 
 /**
+ * Default PATCH by ID from request JSON body
+ */
+var PatchByIdRoute = (function (_super) {
+    __extends(PatchByIdRoute, _super);
+    function PatchByIdRoute(_type, idParamName) {
+        var _this = _super.call(this, {
+            routeParams: [idParamName]
+        }) || this;
+        _this._type = _type;
+        _this.idParamName = idParamName;
+        return _this;
+    }
+    PatchByIdRoute.prototype.handleRequest = function (params, req, res) {
+        return _crud_handlers__WEBPACK_IMPORTED_MODULE_0__["CrudHandlers"].patchObject(req, this._type, params[this.idParamName]);
+    };
+    return PatchByIdRoute;
+}(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
+
+/**
  * Default PUT by ID from request JSON body
  */
 var MultiPutRoute = (function (_super) {
@@ -533,6 +645,22 @@ var MultiPutRoute = (function (_super) {
         return _crud_handlers__WEBPACK_IMPORTED_MODULE_0__["CrudHandlers"].putObjects(req, this._type);
     };
     return MultiPutRoute;
+}(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
+
+/**
+ * Default PUT by ID from request JSON body
+ */
+var MultiPatchRoute = (function (_super) {
+    __extends(MultiPatchRoute, _super);
+    function MultiPatchRoute(_type) {
+        var _this = _super.call(this) || this;
+        _this._type = _type;
+        return _this;
+    }
+    MultiPatchRoute.prototype.handleRequest = function (params, req, res) {
+        return _crud_handlers__WEBPACK_IMPORTED_MODULE_0__["CrudHandlers"].patchObjects(req, this._type);
+    };
+    return MultiPatchRoute;
 }(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
 
 /**
