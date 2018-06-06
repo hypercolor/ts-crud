@@ -148,7 +148,7 @@ __webpack_require__.r(__webpack_exports__);
 var CrudConfig = (function () {
     function CrudConfig() {
     }
-    CrudConfig.prototype.setControllerConfig = function (name, description, version) {
+    CrudConfig.setControllerConfig = function (name, description, version) {
         ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageName = name;
         ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageDescription = description;
         ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageVersion = version;

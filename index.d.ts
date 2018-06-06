@@ -100,6 +100,6 @@ export class CrudHandlers {
 }
 
 export class CrudConfig {
-    setControllerConfig(name: string, description: string, version: string): void;
+    static setControllerConfig(name: string, description: string, version: string): void;
 }
 
