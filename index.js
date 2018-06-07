@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, MultiPatchRoute, PutByIdRoute, QueryRoute, PatchByIdRoute, CrudHandlers, CrudConfig, GetAllObjectsHandler, UpdateObjectFromJson, FetchObject, CreateObjectFromJson */
+/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, MultiPatchRoute, PutByIdRoute, QueryRoute, PatchByIdRoute, CrudHandlers, CrudConfig, GetAllObjectsHandler, UpdateObjectFromJson, EUpdateType, FetchObject, CreateObjectFromJson */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -128,6 +128,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _src_handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./src/handlers/shared/update-object-from-json */ "./src/handlers/shared/update-object-from-json.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UpdateObjectFromJson", function() { return _src_handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_4__["UpdateObjectFromJson"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EUpdateType", function() { return _src_handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_4__["EUpdateType"]; });
 
 /* harmony import */ var _src_handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./src/handlers/shared/fetch-object */ "./src/handlers/shared/fetch-object.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FetchObject", function() { return _src_handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_5__["FetchObject"]; });
