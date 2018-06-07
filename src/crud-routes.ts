@@ -8,6 +8,7 @@ import { IUserRequest } from "./IUserRequest";
 import { IPostgresModelClass, PostgresModel } from "ts-postgres-model";
 import {Controller} from 'ts-express-controller';
 import {Response} from 'express';
+import { GetAllObjectsHandler } from "./handlers/get/get-all-objects-handler";
 
 /**
  * Default GET by ID
@@ -94,7 +95,7 @@ export class DeleteRoute extends Controller {
 export class QueryRoute extends Controller {
   constructor(private _type: IPostgresModelClass<any>, private fetchParams?: any, private _allowDeleted?: boolean) {super();}
   protected handleRequest(params: any, req: IUserRequest, res: Response) {
-    return CrudHandlers.getAllObjects(req, this._type, this.fetchParams, this._allowDeleted);
+    return new GetAllObjectsHandler(req, this._type, this.fetchParams, this._allowDeleted).run();
   }
 }
 

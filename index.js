@@ -171,33 +171,32 @@ var CrudConfig = (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CrudHandlers", function() { return CrudHandlers; });
 /* harmony import */ var _promise_queue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./promise_queue */ "./src/promise_queue.ts");
+/* harmony import */ var _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./handlers/shared/update-object-from-json */ "./src/handlers/shared/update-object-from-json.ts");
+/* harmony import */ var _handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./handlers/shared/create-object-from-json */ "./src/handlers/shared/create-object-from-json.ts");
+/* harmony import */ var _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./handlers/shared/fetch-object */ "./src/handlers/shared/fetch-object.ts");
+
+
+
 
 
 var CrudHandlers = (function () {
     function CrudHandlers() {
     }
-    CrudHandlers.getAllObjects = function (req, model, fetchParams, allowDeleted) {
-        var query = allowDeleted ? {} : { deleted: false };
-        return new model().where(query).fetchAllForUser(req.user, fetchParams)
-            .then(function (objects) {
-            return Promise.resolve(objects.toJSON());
-        });
-    };
     CrudHandlers.postFromRequestBody = function (req, model) {
         if (req.body.constructor === Array) {
             var queue = new _promise_queue__WEBPACK_IMPORTED_MODULE_0__["PromiseQueue"](1);
             return queue.runAllPromiseFunctions(req.body.map(function (jsonObject) {
                 return function () {
-                    return handlePostForJsonObject(model, jsonObject, req);
+                    return new _handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_2__["CreateObjectFromJson"](model, jsonObject, req).run();
                 };
             }));
         }
         else {
-            return handlePostForJsonObject(model, req.body, req);
+            return new _handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_2__["CreateObjectFromJson"](model, req.body, req).run();
         }
     };
     CrudHandlers.getObjectById = function (req, model, objectId) {
-        return this.fetchObjectForRequest(req, model, objectId)
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req, model, objectId, true).run()
             .then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
@@ -207,45 +206,43 @@ var CrudHandlers = (function () {
             }
         });
     };
-    CrudHandlers.putObject = function (req, model, objectId) {
+    CrudHandlers.putObject = function (req, model, objectId, transaction) {
         req.body.id = objectId;
-        return this.handlePutForJsonObject(model, req.body, req);
+        return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
     };
-    CrudHandlers.patchObject = function (req, model, objectId) {
+    CrudHandlers.patchObject = function (req, model, objectId, transaction) {
         req.body.id = objectId;
-        return this.handlePatchForJsonObject(model, req.body, req);
+        return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
     };
-    CrudHandlers.putObjects = function (req, model) {
-        var _this = this;
+    CrudHandlers.putObjects = function (req, model, transaction) {
         if (req.body.constructor === Array) {
             var queue = new _promise_queue__WEBPACK_IMPORTED_MODULE_0__["PromiseQueue"](1);
             return queue.runAllPromiseFunctions(req.body.map(function (jsonObject) {
                 return function () {
-                    return _this.handlePutForJsonObject(model, jsonObject, req);
+                    return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, jsonObject, req, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
                 };
             }));
         }
         else {
-            return this.handlePutForJsonObject(model, req.body, req);
+            return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
         }
     };
-    CrudHandlers.patchObjects = function (req, model) {
-        var _this = this;
+    CrudHandlers.patchObjects = function (req, model, transaction) {
         if (req.body.constructor === Array) {
             var queue = new _promise_queue__WEBPACK_IMPORTED_MODULE_0__["PromiseQueue"](1);
             return queue.runAllPromiseFunctions(req.body.map(function (jsonObject) {
                 return function () {
-                    return _this.handlePatchForJsonObject(model, jsonObject, req);
+                    return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, jsonObject, req, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
                 };
             }));
         }
         else {
-            return this.handlePatchForJsonObject(model, req.body, req);
+            return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
         }
     };
     CrudHandlers.deleteObject = function (req, model, objectId) {
         var object;
-        return this.fetchObjectForRequest(req, model, objectId, null)
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req, model, objectId, false).run()
             .then(function (o) {
             object = o;
             if (object === null) {
@@ -260,7 +257,7 @@ var CrudHandlers = (function () {
         });
     };
     CrudHandlers.setObjectDeleted = function (req, model, objectId) {
-        return this.fetchObjectForRequest(req, model, objectId)
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req, model, objectId, false).run()
             .then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
@@ -272,7 +269,7 @@ var CrudHandlers = (function () {
         });
     };
     CrudHandlers.setObjectUndeleted = function (req, model, objectId) {
-        return this.fetchObjectForRequest(req, model, objectId, null)
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req, model, objectId, false).run()
             .then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
@@ -282,78 +279,6 @@ var CrudHandlers = (function () {
                 return object.saveForUser(req.user);
             }
         });
-    };
-    CrudHandlers.handlePutForJsonObject = function (model, jsonObject, req, transaction) {
-        if (jsonObject.id === undefined || jsonObject.id === '') {
-            return handlePostForJsonObject(model, jsonObject, req);
-        }
-        else {
-            return this.fetchObjectForRequest(req, model, jsonObject.id)
-                .then(function (object) {
-                if (object === null) {
-                    return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + jsonObject.id });
-                }
-                else {
-                    // For PUT requests, we want to clear out any existing data, then update from the request
-                    Object.values(object.columns).forEach(function (columnName) {
-                        object[columnName] = null;
-                    });
-                    if (transaction) {
-                        return object.updateWithParams(jsonObject, req.user, { transacting: transaction });
-                    }
-                    else {
-                        return object.updateWithParams(jsonObject, req.user);
-                    }
-                }
-            })
-                .then(function (object) {
-                if (req.query.p === undefined) {
-                    return Promise.resolve(object);
-                }
-                else {
-                    return validateFetchOptions(model, req.query.p)
-                        .then(function (fetchOptions) {
-                        return new model().where({ id: object.id }).fetchForUser(req.user, { withRelated: fetchOptions });
-                    });
-                }
-            });
-        }
-    };
-    CrudHandlers.handlePatchForJsonObject = function (model, jsonObject, req, transaction) {
-        if (jsonObject.id === undefined || jsonObject.id === '') {
-            return handlePostForJsonObject(model, jsonObject, req);
-        }
-        else {
-            return this.fetchObjectForRequest(req, model, jsonObject.id)
-                .then(function (object) {
-                if (object === null) {
-                    return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + jsonObject.id });
-                }
-                else {
-                    if (transaction) {
-                        return object.updateWithParams(jsonObject, req.user, { transacting: transaction });
-                    }
-                    else {
-                        return object.updateWithParams(jsonObject, req.user);
-                    }
-                }
-            })
-                .then(function (object) {
-                if (req.query.p === undefined) {
-                    return Promise.resolve(object);
-                }
-                else {
-                    return validateFetchOptions(model, req.query.p)
-                        .then(function (fetchOptions) {
-                        return new model().where({ id: object.id }).fetchForUser(req.user, { withRelated: fetchOptions });
-                    });
-                }
-            });
-        }
-    };
-    CrudHandlers.fetchObjectForRequest = function (req, model, id, fetchParams) {
-        var query = new model().where({ id: id });
-        return query.fetchForUser(req.user, fetchParams);
     };
     return CrudHandlers;
 }());
@@ -403,29 +328,28 @@ var CrudHandlers = (function () {
  * @param req
  * @returns {Promise|*}
  */
-function handlePostForJsonObject(model, jsonObject, req) {
-    // if (!req.user){
-    //   return Promise.reject({code: 500, error: 'Request had no user.'});
-    // } else {
-    jsonObject = jsonObject || {};
-    // if (((new model().columns) as any)['userId']) {
-    //   jsonObject.userId = jsonObject.userId || req.user.id;
-    // }
-    var object = new model();
-    return object.updateWithParams(jsonObject, req.user)
-        .then(function (savedObject) {
-        if (req.query.p === undefined) {
-            return Promise.resolve(savedObject);
-        }
-        else {
-            return validateFetchOptions(model, req.query.p)
-                .then(function (fetchOptions) {
-                return new model().where({ id: object.id }).fetchForUser(req.user, { withRelated: fetchOptions });
-            });
-        }
-    });
-    // }
-}
+// function handlePostForJsonObject<T extends PostgresModel<T>>(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest) {
+//   // if (!req.user){
+//   //   return Promise.reject({code: 500, error: 'Request had no user.'});
+//   // } else {
+//     jsonObject = jsonObject || {};
+//     // if (((new model().columns) as any)['userId']) {
+//     //   jsonObject.userId = jsonObject.userId || req.user.id;
+//     // }
+//     const object = new model();
+//     return object.updateWithParams(jsonObject, req.user)
+//     .then(savedObject => {
+//       if (req.query.p === undefined) {
+//         return Promise.resolve(savedObject);
+//       } else {
+//         return validateFetchOptions(model, req.query.p)
+//         .then((fetchOptions: any) => {
+//           return new model().where({id: object.id}).fetchForUser(req.user, {withRelated: fetchOptions});
+//         });
+//       }
+//     });
+//   // }
+// }
 /**
  * Fetch an object for a req.
  *
@@ -439,83 +363,6 @@ function handlePostForJsonObject(model, jsonObject, req) {
 //   let query = new model().where({id});
 //   return query.fetchForUser(req, fetchParams);
 // }
-/**
- * Validate the fetch parameters specified in population-enabled routes.
- *
- * @param model
- * @param fetchOptionsString
- * @returns {*}
- */
-function validateFetchOptions(model, fetchOptionsString) {
-    // console.log("Validating fetch options for " + model.model.MODEL_NAME + ": " + fetchOptionsString);
-    return parseFetchOptions(fetchOptionsString)
-        .then(function (fetchOptions) {
-        if (typeof fetchOptions === 'string') {
-            if (!isValidRelationship(model, fetchOptions)) {
-                return Promise.reject({
-                    code: 400,
-                    error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOptions
-                });
-            }
-            else {
-                return Promise.resolve(fetchOptions);
-            }
-        }
-        else if (fetchOptions instanceof Array) {
-            return Promise.all(fetchOptions.map(function (fetchOption) {
-                if (!isValidRelationship(model, fetchOption)) {
-                    return Promise.reject({
-                        code: 400,
-                        error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOption
-                    });
-                }
-                else {
-                    return Promise.resolve();
-                }
-            }))
-                .then(function () {
-                return Promise.resolve(fetchOptions);
-            });
-        }
-        else {
-            return Promise.reject({
-                code: 400,
-                error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOptions
-            });
-        }
-    });
-    function isValidRelationship(testModel, testRelationship) {
-        if (!testModel.relationships) {
-            return false;
-        }
-        else {
-            var isValid_1 = false;
-            Object.values(testModel.relationships).forEach(function (relationship) {
-                if (relationship === testRelationship) {
-                    isValid_1 = true;
-                }
-            });
-            return isValid_1;
-        }
-    }
-}
-/**
- * Convert a fetch options string from the URL into a JSON object.
- *
- * @param fetchOptionsString
- * @returns {*}
- */
-function parseFetchOptions(fetchOptionsString) {
-    return new Promise(function (resolve, reject) {
-        try {
-            var options = JSON.parse(fetchOptionsString);
-            resolve(options);
-        }
-        catch (err) {
-            reject('Invalid JSON for fetch options: ' + fetchOptionsString + ' - ' + err.message);
-        }
-    });
-}
 
 
 /***/ }),
@@ -542,6 +389,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _crud_handlers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./crud-handlers */ "./src/crud-handlers.ts");
 /* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ts-express-controller */ "ts-express-controller");
 /* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _handlers_get_get_all_objects_handler__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./handlers/get/get-all-objects-handler */ "./src/handlers/get/get-all-objects-handler.ts");
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -556,6 +404,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 // import {PostgresModel, IPostgresModelClass} from '../../models/shared/base';
 // import {IUserRequest} from '../../util/auth';
 // import {Controller, Response} from './base';
+
 
 
 /**
@@ -695,7 +544,7 @@ var QueryRoute = (function (_super) {
         return _this;
     }
     QueryRoute.prototype.handleRequest = function (params, req, res) {
-        return _crud_handlers__WEBPACK_IMPORTED_MODULE_0__["CrudHandlers"].getAllObjects(req, this._type, this.fetchParams, this._allowDeleted);
+        return new _handlers_get_get_all_objects_handler__WEBPACK_IMPORTED_MODULE_2__["GetAllObjectsHandler"](req, this._type, this.fetchParams, this._allowDeleted).run();
     };
     return QueryRoute;
 }(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
@@ -731,6 +580,360 @@ var MarkUndeletedRoute = (function (_super) {
     };
     return MarkUndeletedRoute;
 }(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
+
+
+
+/***/ }),
+
+/***/ "./src/handlers/get/get-all-objects-handler.ts":
+/*!*****************************************************!*\
+  !*** ./src/handlers/get/get-all-objects-handler.ts ***!
+  \*****************************************************/
+/*! exports provided: GetAllObjectsHandler */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GetAllObjectsHandler", function() { return GetAllObjectsHandler; });
+/* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
+
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+var GetAllObjectsHandler = (function (_super) {
+    __extends(GetAllObjectsHandler, _super);
+    function GetAllObjectsHandler(req, model, fetchParams, allowDeleted) {
+        var _this = _super.call(this) || this;
+        _this.req = req;
+        _this.model = model;
+        _this.fetchParams = fetchParams;
+        _this.allowDeleted = allowDeleted;
+        return _this;
+    }
+    GetAllObjectsHandler.prototype.run = function () {
+        var query = this.allowDeleted ? {} : { deleted: false };
+        return new this.model().where(query).fetchAllForUser(this.req.user, this.fetchParams)
+            .then(function (objects) {
+            return Promise.resolve(objects.toJSON());
+        });
+    };
+    return GetAllObjectsHandler;
+}(_handler__WEBPACK_IMPORTED_MODULE_0__["Handler"]));
+
+
+
+/***/ }),
+
+/***/ "./src/handlers/handler.ts":
+/*!*********************************!*\
+  !*** ./src/handlers/handler.ts ***!
+  \*********************************/
+/*! exports provided: Handler */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Handler", function() { return Handler; });
+
+var Handler = (function () {
+    function Handler() {
+    }
+    return Handler;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/handlers/shared/create-object-from-json.ts":
+/*!********************************************************!*\
+  !*** ./src/handlers/shared/create-object-from-json.ts ***!
+  \********************************************************/
+/*! exports provided: CreateObjectFromJson */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CreateObjectFromJson", function() { return CreateObjectFromJson; });
+/* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
+/* harmony import */ var _fetch_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fetch-object */ "./src/handlers/shared/fetch-object.ts");
+
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+var CreateObjectFromJson = (function (_super) {
+    __extends(CreateObjectFromJson, _super);
+    function CreateObjectFromJson(model, jsonObject, req) {
+        var _this = _super.call(this) || this;
+        _this.model = model;
+        _this.jsonObject = jsonObject;
+        _this.req = req;
+        _this.jsonObject = jsonObject || {};
+        return _this;
+    }
+    CreateObjectFromJson.prototype.run = function () {
+        var _this = this;
+        var object = new this.model();
+        return object.updateWithParams(this.jsonObject, this.req.user)
+            .then(function (savedObject) {
+            if (_this.req.query.p === undefined) {
+                return Promise.resolve(savedObject);
+            }
+            else {
+                return new _fetch_object__WEBPACK_IMPORTED_MODULE_1__["FetchObject"](_this.req, _this.model, _this.jsonObject.id, true).run();
+            }
+        });
+    };
+    return CreateObjectFromJson;
+}(_handler__WEBPACK_IMPORTED_MODULE_0__["Handler"]));
+
+
+
+/***/ }),
+
+/***/ "./src/handlers/shared/fetch-object.ts":
+/*!*********************************************!*\
+  !*** ./src/handlers/shared/fetch-object.ts ***!
+  \*********************************************/
+/*! exports provided: FetchObject */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FetchObject", function() { return FetchObject; });
+/* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
+
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+var FetchObject = (function (_super) {
+    __extends(FetchObject, _super);
+    function FetchObject(req, model, objectId, allowQueryPopulation, fetchParams) {
+        var _this = _super.call(this) || this;
+        _this.req = req;
+        _this.model = model;
+        _this.objectId = objectId;
+        _this.allowQueryPopulation = allowQueryPopulation;
+        _this.fetchParams = fetchParams;
+        _this.fetchParams = fetchParams || {};
+        if (!_this.fetchParams.withRelated) {
+            _this.fetchParams.withRelated = [];
+        }
+        return _this;
+    }
+    FetchObject.prototype.run = function () {
+        var _this = this;
+        if (this.allowQueryPopulation) {
+            return validateFetchOptions(this.model, this.req.query.p)
+                .then(function (fetchOptions) {
+                fetchOptions.forEach(function (option) {
+                    _this.fetchParams.withRelated.push(option);
+                });
+                return _this.doQuery();
+            });
+        }
+        else {
+            return this.doQuery();
+        }
+    };
+    FetchObject.prototype.doQuery = function () {
+        return new this.model().where({ id: this.objectId }).fetchForUser(this.req.user, this.fetchParams);
+    };
+    return FetchObject;
+}(_handler__WEBPACK_IMPORTED_MODULE_0__["Handler"]));
+
+/**
+ * Validate the fetch parameters specified in population-enabled routes.
+ *
+ * @param model
+ * @param fetchOptionsString
+ * @returns {*}
+ */
+function validateFetchOptions(model, fetchOptionsString) {
+    // console.log("Validating fetch options for " + model.model.MODEL_NAME + ": " + fetchOptionsString);
+    if (!fetchOptionsString) {
+        return Promise.resolve([]);
+    }
+    else {
+        return parseFetchOptions(fetchOptionsString)
+            .then(function (fetchOptions) {
+            if (typeof fetchOptions === 'string') {
+                if (!isValidRelationship(model, fetchOptions)) {
+                    return Promise.reject({
+                        code: 400,
+                        error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOptions
+                    });
+                }
+                else {
+                    return Promise.resolve([fetchOptions]);
+                }
+            }
+            else {
+                return Promise.all(fetchOptions.map(function (fetchOption) {
+                    if (!isValidRelationship(model, fetchOption)) {
+                        return Promise.reject({
+                            code: 400,
+                            error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOption
+                        });
+                    }
+                    else {
+                        return Promise.resolve();
+                    }
+                }))
+                    .then(function () {
+                    return Promise.resolve(fetchOptions);
+                });
+            }
+        });
+    }
+    function isValidRelationship(testModel, testRelationship) {
+        if (!testModel.relationships) {
+            return false;
+        }
+        else {
+            var isValid_1 = false;
+            Object.values(testModel.relationships).forEach(function (relationship) {
+                if (relationship === testRelationship) {
+                    isValid_1 = true;
+                }
+            });
+            return isValid_1;
+        }
+    }
+}
+/**
+ * Convert a fetch options string from the URL into a JSON object.
+ *
+ * @param fetchOptionsString
+ * @returns {*}
+ */
+function parseFetchOptions(fetchOptionsString) {
+    return new Promise(function (resolve, reject) {
+        try {
+            var options = JSON.parse(fetchOptionsString);
+            if (options.constructor !== String && options.constructor !== Array) {
+                reject('Invalid JSON type for fetch options: ' + options.constructor.name);
+            }
+            else {
+                resolve(options);
+            }
+        }
+        catch (err) {
+            reject('Invalid JSON for fetch options: ' + fetchOptionsString + ' - ' + err.message);
+        }
+    });
+}
+
+
+/***/ }),
+
+/***/ "./src/handlers/shared/update-object-from-json.ts":
+/*!********************************************************!*\
+  !*** ./src/handlers/shared/update-object-from-json.ts ***!
+  \********************************************************/
+/*! exports provided: EUpdateType, UpdateObjectFromJson */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EUpdateType", function() { return EUpdateType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UpdateObjectFromJson", function() { return UpdateObjectFromJson; });
+/* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
+/* harmony import */ var _create_object_from_json__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./create-object-from-json */ "./src/handlers/shared/create-object-from-json.ts");
+/* harmony import */ var _fetch_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fetch-object */ "./src/handlers/shared/fetch-object.ts");
+
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var EUpdateType;
+(function (EUpdateType) {
+    EUpdateType[EUpdateType["PUT"] = 0] = "PUT";
+    EUpdateType[EUpdateType["PATCH"] = 1] = "PATCH";
+})(EUpdateType = EUpdateType || (EUpdateType = {}));
+var UpdateObjectFromJson = (function (_super) {
+    __extends(UpdateObjectFromJson, _super);
+    function UpdateObjectFromJson(model, jsonObject, req, updateType, transaction) {
+        var _this = _super.call(this) || this;
+        _this.model = model;
+        _this.jsonObject = jsonObject;
+        _this.req = req;
+        _this.updateType = updateType;
+        _this.transaction = transaction;
+        return _this;
+    }
+    UpdateObjectFromJson.prototype.run = function () {
+        var _this = this;
+        if (this.jsonObject.id === undefined || this.jsonObject.id === '') {
+            return new _create_object_from_json__WEBPACK_IMPORTED_MODULE_1__["CreateObjectFromJson"](this.model, this.jsonObject, this.req).run();
+        }
+        else {
+            return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](this.req, this.model, this.jsonObject.id, false).run()
+                .then(function (object) {
+                if (object === null) {
+                    return Promise.reject({ code: 404, error: _this.model.instanceName + ' not found: ' + _this.jsonObject.id });
+                }
+                else {
+                    // For PUT requests, we want to clear out any existing data, then update from the request
+                    if (_this.updateType === EUpdateType.PUT) {
+                        Object.values(object.columns).forEach(function (columnName) {
+                            delete object[columnName];
+                        });
+                    }
+                    if (_this.transaction) {
+                        return object.updateWithParams(_this.jsonObject, _this.req.user, { transacting: _this.transaction });
+                    }
+                    else {
+                        return object.updateWithParams(_this.jsonObject, _this.req.user);
+                    }
+                }
+            })
+                .then(function (object) {
+                if (_this.req.query.p === undefined) {
+                    return Promise.resolve(object);
+                }
+                else {
+                    return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](_this.req, _this.model, _this.jsonObject.id, true).run();
+                }
+            });
+        }
+    };
+    return UpdateObjectFromJson;
+}(_handler__WEBPACK_IMPORTED_MODULE_0__["Handler"]));
 
 
 
