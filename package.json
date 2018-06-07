@@ -1,6 +1,6 @@
 {
   "name": "ts-crud",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Helper classes and handlers for CRUD routes / actions using the ts-postgres-model and ts-express-controller frameworks",
   "main": "index.js",
   "types": "index.d.ts",

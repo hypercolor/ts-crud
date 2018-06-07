@@ -13,6 +13,7 @@ import * as e from "express";
 import { IUser } from "ts-postgres-model";
 import { Collection } from 'bookshelf';
 import { Transaction } from 'knex';
+import { Transaction } from "knex";
 
 /**
     * Default GET by ID
@@ -97,5 +98,33 @@ export class CrudHandlers {
 
 export class CrudConfig {
     static setControllerConfig(name: string, description: string, version: string): void;
+}
+
+export class GetAllObjectsHandler<T extends PostgresModel<T>> extends Handler {
+    constructor(req: IUserRequest, model: IPostgresModelClass<T>, fetchParams: any, allowDeleted: boolean | undefined);
+    run(): Promise<any[]>;
+}
+
+export enum EUpdateType {
+    PUT = 0,
+    PATCH = 1,
+}
+export class UpdateObjectFromJson<T extends PostgresModel<T>> extends Handler {
+    constructor(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, updateType: EUpdateType, transaction?: Transaction | undefined);
+    run(): Promise<T>;
+}
+
+export class FetchObject<T extends PostgresModel<T>> extends Handler {
+    constructor(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, allowQueryPopulation: boolean, fetchParams?: any);
+    run(): Promise<T>;
+}
+
+export class CreateObjectFromJson<T extends PostgresModel<T>> extends Handler {
+    constructor(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest);
+    run(): Promise<T>;
+}
+
+export abstract class Handler {
+    abstract run(): Promise<any>;
 }
 

@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, MultiPatchRoute, PutByIdRoute, QueryRoute, PatchByIdRoute, CrudHandlers, CrudConfig */
+/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, MultiPatchRoute, PutByIdRoute, QueryRoute, PatchByIdRoute, CrudHandlers, CrudConfig, GetAllObjectsHandler, UpdateObjectFromJson, FetchObject, CreateObjectFromJson */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -122,6 +122,22 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _src_crud_config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/crud-config */ "./src/crud-config.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CrudConfig", function() { return _src_crud_config__WEBPACK_IMPORTED_MODULE_2__["CrudConfig"]; });
+
+/* harmony import */ var _src_handlers_get_get_all_objects_handler__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/handlers/get/get-all-objects-handler */ "./src/handlers/get/get-all-objects-handler.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GetAllObjectsHandler", function() { return _src_handlers_get_get_all_objects_handler__WEBPACK_IMPORTED_MODULE_3__["GetAllObjectsHandler"]; });
+
+/* harmony import */ var _src_handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./src/handlers/shared/update-object-from-json */ "./src/handlers/shared/update-object-from-json.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UpdateObjectFromJson", function() { return _src_handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_4__["UpdateObjectFromJson"]; });
+
+/* harmony import */ var _src_handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./src/handlers/shared/fetch-object */ "./src/handlers/shared/fetch-object.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "FetchObject", function() { return _src_handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_5__["FetchObject"]; });
+
+/* harmony import */ var _src_handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./src/handlers/shared/create-object-from-json */ "./src/handlers/shared/create-object-from-json.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CreateObjectFromJson", function() { return _src_handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_6__["CreateObjectFromJson"]; });
+
+
+
+
 
 
 
