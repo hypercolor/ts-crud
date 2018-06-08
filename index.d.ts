@@ -120,7 +120,7 @@ export class FetchObject<T extends PostgresModel<T>> extends Handler {
 }
 
 export class CreateObjectFromJson<T extends PostgresModel<T>> extends Handler {
-    constructor(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest);
+    constructor(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, transaction?: Transaction | undefined);
     run(): Promise<T>;
 }
 
@@ -134,7 +134,7 @@ export interface IPivotObject {
     id: number;
 }
 export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
-    constructor(req: IUserRequest, objectJson: any, pivotConfig: IPivotConfig<T>, transaction?: Transaction | undefined);
+    constructor(req: IUserRequest, objectJson: any, localObjectId: any, pivotConfig: IPivotConfig<T>, transaction?: Transaction | undefined);
     run(): Promise<void>;
 }
 

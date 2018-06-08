@@ -702,18 +702,27 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var CreateObjectFromJson = (function (_super) {
     __extends(CreateObjectFromJson, _super);
-    function CreateObjectFromJson(model, jsonObject, req) {
+    function CreateObjectFromJson(model, jsonObject, req, transaction) {
         var _this = _super.call(this) || this;
         _this.model = model;
         _this.jsonObject = jsonObject;
         _this.req = req;
+        _this.transaction = transaction;
         _this.jsonObject = jsonObject || {};
         return _this;
     }
     CreateObjectFromJson.prototype.run = function () {
         var _this = this;
         var object = new this.model();
-        return object.updateWithParams(this.jsonObject, this.req.user)
+        return Promise.resolve()
+            .then(function () {
+            if (_this.transaction) {
+                return object.updateWithParams(_this.jsonObject, _this.req.user);
+            }
+            else {
+                return object.updateWithParams(_this.jsonObject, _this.req.user, { transacting: _this.transaction });
+            }
+        })
             .then(function (savedObject) {
             if (_this.req.query.p === undefined) {
                 return Promise.resolve(savedObject);
@@ -991,10 +1000,11 @@ var __extends = (undefined && undefined.__extends) || (function () {
 //                    * foreign id
 var UpdatePivotTables = (function (_super) {
     __extends(UpdatePivotTables, _super);
-    function UpdatePivotTables(req, objectJson, pivotConfig, transaction) {
+    function UpdatePivotTables(req, objectJson, localObjectId, pivotConfig, transaction) {
         var _this = _super.call(this) || this;
         _this.req = req;
         _this.objectJson = objectJson;
+        _this.localObjectId = localObjectId;
         _this.pivotConfig = pivotConfig;
         _this.transaction = transaction;
         return _this;
@@ -1013,7 +1023,7 @@ var UpdatePivotTables = (function (_super) {
         else {
             // 1.  Fetch all objects currently in pivot table
             var pivotQuery = {};
-            pivotQuery[this.pivotConfig.pivotKeyLocalItemId] = this.objectJson.id;
+            pivotQuery[this.pivotConfig.pivotKeyLocalItemId] = this.localObjectId;
             return new this.pivotConfig.pivotModel().where(pivotQuery).fetchAllForUser(this.req.user)
                 .then(function (currentPivotEntries) {
                 var foreignObjectsToAdd = [];
@@ -1044,7 +1054,7 @@ var UpdatePivotTables = (function (_super) {
                 });
                 // console.log('We need to add ' + foreignObjectsToAdd.length + ' entries and remove ' + pivotEntriesToRemove.length + ' entries.');
                 return Promise.all([
-                    createPivotEntries(_this.req.user, _this.objectJson.id, _this.pivotConfig, foreignObjectsToAdd, _this.transaction),
+                    createPivotEntries(_this.req.user, _this.localObjectId, _this.pivotConfig, foreignObjectsToAdd, _this.transaction),
                     removePivotEntries(_this.req.user, _this.pivotConfig, pivotEntriesToRemove, _this.transaction)
                 ]);
             })

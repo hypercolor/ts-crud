@@ -17,7 +17,7 @@ export class UpdateObjectFromJson<T extends PostgresModel<T>> extends Handler {
     super()
   }
 
-  run() {
+  run(): Promise<T> {
     if (this.jsonObject.id === undefined || this.jsonObject.id === '') {
       return new CreateObjectFromJson(this.model, this.jsonObject, this.req).run();
     } else {

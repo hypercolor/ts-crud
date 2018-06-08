@@ -26,7 +26,7 @@ export interface IPivotObject {
 export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
 
 
-  constructor(private req: IUserRequest, private objectJson: any, private pivotConfig: IPivotConfig<T>, private transaction?: Transaction){
+  constructor(private req: IUserRequest, private objectJson: any, private localObjectId: any, private pivotConfig: IPivotConfig<T>, private transaction?: Transaction){
     super();
   }
 
@@ -47,7 +47,7 @@ export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
       // 1.  Fetch all objects currently in pivot table
 
       const pivotQuery: any = {};
-      pivotQuery[this.pivotConfig.pivotKeyLocalItemId] = this.objectJson.id;
+      pivotQuery[this.pivotConfig.pivotKeyLocalItemId] = this.localObjectId;
 
       return new this.pivotConfig.pivotModel().where(pivotQuery).fetchAllForUser(this.req.user)
       .then(currentPivotEntries => {
@@ -88,7 +88,7 @@ export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
         // console.log('We need to add ' + foreignObjectsToAdd.length + ' entries and remove ' + pivotEntriesToRemove.length + ' entries.');
 
         return Promise.all([
-          createPivotEntries(this.req.user, this.objectJson.id, this.pivotConfig, foreignObjectsToAdd, this.transaction),
+          createPivotEntries(this.req.user, this.localObjectId, this.pivotConfig, foreignObjectsToAdd, this.transaction),
           removePivotEntries(this.req.user, this.pivotConfig, pivotEntriesToRemove, this.transaction)
         ]);
 
