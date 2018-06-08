@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, MultiPatchRoute, PutByIdRoute, QueryRoute, PatchByIdRoute, CrudHandlers, CrudConfig, GetAllObjectsHandler, UpdateObjectFromJson, EUpdateType, FetchObject, CreateObjectFromJson */
+/*! exports provided: GetRoute, PostRoute, DeleteRoute, MarkDeletedRoute, MarkUndeletedRoute, MultiPutRoute, MultiPatchRoute, PutByIdRoute, QueryRoute, PatchByIdRoute, CrudHandlers, CrudConfig, GetAllObjectsHandler, UpdateObjectFromJson, EUpdateType, FetchObject, CreateObjectFromJson, UpdatePivotTables */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -136,6 +136,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _src_handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./src/handlers/shared/create-object-from-json */ "./src/handlers/shared/create-object-from-json.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CreateObjectFromJson", function() { return _src_handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_6__["CreateObjectFromJson"]; });
+
+/* harmony import */ var _src_handlers_shared_update_pivot_tables__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./src/handlers/shared/update-pivot-tables */ "./src/handlers/shared/update-pivot-tables.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UpdatePivotTables", function() { return _src_handlers_shared_update_pivot_tables__WEBPACK_IMPORTED_MODULE_7__["UpdatePivotTables"]; });
+
 
 
 
@@ -953,6 +957,130 @@ var UpdateObjectFromJson = (function (_super) {
     return UpdateObjectFromJson;
 }(_handler__WEBPACK_IMPORTED_MODULE_0__["Handler"]));
 
+
+
+/***/ }),
+
+/***/ "./src/handlers/shared/update-pivot-tables.ts":
+/*!****************************************************!*\
+  !*** ./src/handlers/shared/update-pivot-tables.ts ***!
+  \****************************************************/
+/*! exports provided: UpdatePivotTables */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UpdatePivotTables", function() { return UpdatePivotTables; });
+/* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
+
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+//
+//    Item    <->     Pivot       <->       Foreign
+//    * id            * id                  * id
+//    * "foreigns"    * item id
+//                    * foreign id
+var UpdatePivotTables = (function (_super) {
+    __extends(UpdatePivotTables, _super);
+    function UpdatePivotTables(req, objectJson, pivotConfig, transaction) {
+        var _this = _super.call(this) || this;
+        _this.req = req;
+        _this.objectJson = objectJson;
+        _this.pivotConfig = pivotConfig;
+        _this.transaction = transaction;
+        return _this;
+    }
+    UpdatePivotTables.prototype.run = function () {
+        // console.log('updating pivot table for ' + pivotConfig.foreignArrayPropertyName);
+        var _this = this;
+        var desiredForeignObjects = this.objectJson[this.pivotConfig.foreignArrayPropertyName];
+        // console.log('User desires ' + desiredForeignObjects.length + ' pivot entries');
+        if (!desiredForeignObjects) {
+            return Promise.resolve();
+        }
+        else if (desiredForeignObjects.constructor !== Array) {
+            return Promise.reject({ code: 500, error: 'Cant update non-array pivot table property: ' + this.pivotConfig.foreignArrayPropertyName + ' - found ' + desiredForeignObjects.constructor.name });
+        }
+        else {
+            // 1.  Fetch all objects currently in pivot table
+            var pivotQuery = {};
+            pivotQuery[this.pivotConfig.pivotKeyLocalItemId] = this.objectJson.id;
+            return new this.pivotConfig.pivotModel().where(pivotQuery).fetchAllForUser(this.req.user)
+                .then(function (currentPivotEntries) {
+                var foreignObjectsToAdd = [];
+                var pivotEntriesToRemove = [];
+                // 2.  Create new pivot table objects for ones not found
+                desiredForeignObjects.forEach(function (desiredForeignObject) {
+                    var found = false;
+                    currentPivotEntries.forEach(function (pivotEntry) {
+                        if (pivotEntry.id === desiredForeignObject.id) {
+                            found = true;
+                        }
+                    });
+                    if (!found) {
+                        foreignObjectsToAdd.push(desiredForeignObject);
+                    }
+                });
+                // 3.  Delete pivot table objects for ones not found
+                currentPivotEntries.forEach(function (pivotEntry) {
+                    var found = false;
+                    desiredForeignObjects.forEach(function (desiredPivotEntry) {
+                        if (pivotEntry.id === desiredPivotEntry.id) {
+                            found = true;
+                        }
+                    });
+                    if (!found) {
+                        pivotEntriesToRemove.push(pivotEntry);
+                    }
+                });
+                // console.log('We need to add ' + foreignObjectsToAdd.length + ' entries and remove ' + pivotEntriesToRemove.length + ' entries.');
+                return Promise.all([
+                    createPivotEntries(_this.req.user, _this.objectJson.id, _this.pivotConfig, foreignObjectsToAdd, _this.transaction),
+                    removePivotEntries(_this.req.user, _this.pivotConfig, pivotEntriesToRemove, _this.transaction)
+                ]);
+            })
+                .then(function () {
+                return Promise.resolve();
+            });
+        }
+    };
+    return UpdatePivotTables;
+}(_handler__WEBPACK_IMPORTED_MODULE_0__["Handler"]));
+
+function createPivotEntries(user, localObjectId, pivotConfig, foreignObjectsToAdd, transaction) {
+    return Promise.all(foreignObjectsToAdd.map(function (foreignObjectToAdd) {
+        // console.log('creating new pivot entry for foreign object: ' + JSON.stringify(foreignObjectToAdd));
+        var pivotEntry = new pivotConfig.pivotModel();
+        pivotEntry[pivotConfig.pivotKeyForeignItemId] = foreignObjectToAdd.id;
+        pivotEntry[pivotConfig.pivotKeyLocalItemId] = localObjectId;
+        // console.log('Created ' + JSON.stringify(pivotEntry));
+        if (transaction) {
+            return pivotEntry.saveForUser(user, { transacting: transaction });
+        }
+        else {
+            return pivotEntry.saveForUser(user);
+        }
+    }));
+}
+function removePivotEntries(user, pivotConfig, pivotEntriesToRemove, transaction) {
+    return Promise.all(pivotEntriesToRemove.map(function (pivotEntry) {
+        if (transaction) {
+            return pivotEntry.destroyForUser(user, { transacting: transaction });
+        }
+        else {
+            return pivotEntry.destroyForUser(user);
+        }
+    }));
+}
 
 
 /***/ }),

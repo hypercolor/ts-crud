@@ -124,6 +124,20 @@ export class CreateObjectFromJson<T extends PostgresModel<T>> extends Handler {
     run(): Promise<T>;
 }
 
+export interface IPivotConfig<T extends PostgresModel<T>> {
+    foreignArrayPropertyName: string;
+    pivotModel: IPostgresModelClass<T>;
+    pivotKeyLocalItemId: string;
+    pivotKeyForeignItemId: string;
+}
+export interface IPivotObject {
+    id: number;
+}
+export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
+    constructor(req: IUserRequest, objectJson: any, pivotConfig: IPivotConfig<T>, transaction?: Transaction | undefined);
+    run(): Promise<void>;
+}
+
 export abstract class Handler {
     abstract run(): Promise<any>;
 }
