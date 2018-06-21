@@ -12,7 +12,6 @@ import { Response } from 'express';
 import * as e from "express";
 import { IUser } from "ts-postgres-model";
 import { Collection } from 'bookshelf';
-import { Transaction } from 'knex';
 import { Transaction } from "knex";
 
 /**
