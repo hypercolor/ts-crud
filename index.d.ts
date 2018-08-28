@@ -13,8 +13,8 @@ import * as e from "express";
 import { IUser } from "ts-postgres-model";
 import { Collection } from 'bookshelf';
 import { Transaction } from 'knex';
-import { Transaction } from "knex";
 import { IPostgresModelClass, IUser, PostgresModel } from "ts-postgres-model";
+import { Transaction } from "knex";
 
 /**
     * Default GET by ID
@@ -111,17 +111,17 @@ export enum EUpdateType {
     PATCH = 1,
 }
 export class UpdateObjectFromJson<T extends PostgresModel<T>> extends Handler {
-    constructor(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, updateType: EUpdateType, transaction?: Transaction | undefined);
+    constructor(model: IPostgresModelClass<T>, jsonObject: any, requestingUser: IUser, updateType: EUpdateType, transaction?: Transaction | undefined, populationString?: string | undefined);
     run(): Promise<T>;
 }
 
 export class FetchObject<T extends PostgresModel<T>> extends Handler {
-    constructor(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, allowQueryPopulation: boolean, fetchParams?: any);
+    constructor(requestingUser: IUser, model: IPostgresModelClass<T>, objectId: number, allowQueryPopulation: boolean, fetchParams?: any, populationString?: string | undefined);
     run(): Promise<T>;
 }
 
 export class CreateObjectFromJson<T extends PostgresModel<T>> extends Handler {
-    constructor(model: IPostgresModelClass<T>, jsonObject: any, req: IUserRequest, transaction?: Transaction | undefined);
+    constructor(model: IPostgresModelClass<T>, jsonObject: any, requestingUser: IUser, transaction?: Transaction | undefined, populationString?: string | undefined);
     run(): Promise<T>;
 }
 

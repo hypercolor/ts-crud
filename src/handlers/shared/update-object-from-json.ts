@@ -1,7 +1,6 @@
 import { Handler } from "../handler";
-import { IPostgresModelClass, PostgresModel } from "ts-postgres-model";
+import { IPostgresModelClass, IUser, PostgresModel } from "ts-postgres-model";
 import { Transaction } from "knex";
-import { IUserRequest } from "../../IUserRequest";
 import { CreateObjectFromJson } from "./create-object-from-json";
 import { FetchObject } from "./fetch-object";
 
@@ -13,15 +12,15 @@ export enum EUpdateType {
 export class UpdateObjectFromJson<T extends PostgresModel<T>> extends Handler {
 
 
-  constructor(private model: IPostgresModelClass<T>, private jsonObject: any, private req: IUserRequest, private updateType: EUpdateType, private transaction?: Transaction) {
+  constructor(private model: IPostgresModelClass<T>, private jsonObject: any, private requestingUser: IUser, private updateType: EUpdateType, private transaction?: Transaction, private populationString?: string) {
     super()
   }
 
   run(): Promise<T> {
     if (this.jsonObject.id === undefined || this.jsonObject.id === '') {
-      return new CreateObjectFromJson(this.model, this.jsonObject, this.req).run();
+      return new CreateObjectFromJson(this.model, this.jsonObject, this.requestingUser, this.transaction, this.populationString).run();
     } else {
-      return new FetchObject(this.req, this.model, this.jsonObject.id, false).run()
+      return new FetchObject(this.requestingUser, this.model, this.jsonObject.id, false).run()
       .then((object: T) => {
         if (object === null) {
           return Promise.reject({code: 404, error: this.model.instanceName + ' not found: ' + this.jsonObject.id});
@@ -35,17 +34,17 @@ export class UpdateObjectFromJson<T extends PostgresModel<T>> extends Handler {
           }
 
           if (this.transaction){
-            return object.updateWithParams(this.jsonObject, this.req.user, {transacting: this.transaction});
+            return object.updateWithParams(this.jsonObject, this.requestingUser, {transacting: this.transaction});
           } else {
-            return object.updateWithParams(this.jsonObject, this.req.user);
+            return object.updateWithParams(this.jsonObject, this.requestingUser);
           }
         }
       })
       .then((object: T) => {
-        if (this.req.query.p === undefined) {
+        if (this.populationString === undefined) {
           return Promise.resolve(object);
         } else {
-          return new FetchObject(this.req, this.model, this.jsonObject.id, true).run();
+          return new FetchObject(this.requestingUser, this.model, this.jsonObject.id, true, this.populationString).run();
         }
       });
     }

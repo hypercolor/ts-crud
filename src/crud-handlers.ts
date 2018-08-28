@@ -23,16 +23,16 @@ export class CrudHandlers {
       const queue = new PromiseQueue(1);
       return queue.runAllPromiseFunctions(req.body.map((jsonObject: any) => {
         return () => {
-          return new CreateObjectFromJson(model, jsonObject, req).run();
+          return new CreateObjectFromJson(model, jsonObject, req.user).run();
         };
       }));
     } else {
-      return new CreateObjectFromJson(model, req.body, req).run();
+      return new CreateObjectFromJson(model, req.body, req.user).run();
     }
   }
 
   public static getObjectById<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T> {
-    return new FetchObject(req, model, objectId, true).run()
+    return new FetchObject(req.user, model, objectId, true).run()
     .then((object: T) => {
       if (object === null) {
         return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + objectId});
@@ -45,13 +45,13 @@ export class CrudHandlers {
 
   public static putObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction) {
     req.body.id = objectId;
-    return new UpdateObjectFromJson(model, req.body, req, EUpdateType.PUT, transaction).run();
+    return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PUT, transaction).run();
   }
 
 
   public static patchObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction) {
     req.body.id = objectId;
-    return new UpdateObjectFromJson(model, req.body, req, EUpdateType.PATCH, transaction).run();
+    return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PATCH, transaction).run();
   }
 
   public static putObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, transaction?: Transaction): Promise<T | Collection<T>> {
@@ -59,11 +59,11 @@ export class CrudHandlers {
       const queue = new PromiseQueue(1);
       return queue.runAllPromiseFunctions(req.body.map((jsonObject: any) => {
         return () => {
-          return new UpdateObjectFromJson(model, jsonObject, req, EUpdateType.PUT, transaction).run();
+          return new UpdateObjectFromJson(model, jsonObject, req.user, EUpdateType.PUT, transaction).run();
         };
       }));
     } else {
-      return new UpdateObjectFromJson(model, req.body, req, EUpdateType.PUT, transaction).run();
+      return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PUT, transaction).run();
     }
   }
 
@@ -72,17 +72,17 @@ export class CrudHandlers {
       const queue = new PromiseQueue(1);
       return queue.runAllPromiseFunctions(req.body.map((jsonObject: any) => {
         return () => {
-          return new UpdateObjectFromJson(model, jsonObject, req, EUpdateType.PATCH, transaction).run();
+          return new UpdateObjectFromJson(model, jsonObject, req.user, EUpdateType.PATCH, transaction).run();
         };
       }));
     } else {
-      return new UpdateObjectFromJson(model, req.body, req, EUpdateType.PATCH, transaction).run();
+      return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PATCH, transaction).run();
     }
   }
 
   public static deleteObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number) {
     let object;
-    return new FetchObject(req, model, objectId, false).run()
+    return new FetchObject(req.user, model, objectId, false).run()
     .then((o: T) => {
       object = o;
       if (object === null) {
@@ -97,7 +97,7 @@ export class CrudHandlers {
   }
 
   public static setObjectDeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number) {
-    return new FetchObject(req, model, objectId, false).run()
+    return new FetchObject(req.user, model, objectId, false).run()
     .then((object: T) => {
       if (object === null) {
         return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + objectId});
@@ -109,7 +109,7 @@ export class CrudHandlers {
   }
 
   public static setObjectUndeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number) {
-    return new FetchObject(req, model, objectId, false).run()
+    return new FetchObject(req.user, model, objectId, false).run()
     .then((object: T) => {
       if (object === null) {
         return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + objectId});

@@ -1,10 +1,9 @@
 import { Handler } from "../handler";
-import { IPostgresModelClass, PostgresModel } from "ts-postgres-model";
-import { IUserRequest } from "../../IUserRequest";
+import { IPostgresModelClass, IUser, PostgresModel } from "ts-postgres-model";
 
 export class FetchObject<T extends PostgresModel<T>> extends Handler {
 
-  constructor(private req: IUserRequest, private model: IPostgresModelClass<T>, private objectId: number, private allowQueryPopulation: boolean, private fetchParams?: any){
+  constructor(private requestingUser: IUser, private model: IPostgresModelClass<T>, private objectId: number, private allowQueryPopulation: boolean, private fetchParams?: any, private populationString?: string){
     super();
 
     this.fetchParams = fetchParams || {};
@@ -17,8 +16,8 @@ export class FetchObject<T extends PostgresModel<T>> extends Handler {
 
   run() {
 
-    if (this.allowQueryPopulation) {
-      return validateFetchOptions(this.model, this.req.query.p)
+    if (this.allowQueryPopulation && this.populationString) {
+      return validateFetchOptions(this.model, this.populationString)
       .then((fetchOptions: Array<string>) => {
         fetchOptions.forEach(option => {
           this.fetchParams.withRelated.push(option);
@@ -34,7 +33,7 @@ export class FetchObject<T extends PostgresModel<T>> extends Handler {
   }
 
   private doQuery() {
-    return new this.model().where({id: this.objectId}).fetchForUser(this.req.user, this.fetchParams);
+    return new this.model().where({id: this.objectId}).fetchForUser(this.requestingUser, this.fetchParams);
   }
 
 }
