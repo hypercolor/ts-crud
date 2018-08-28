@@ -1000,9 +1000,9 @@ var __extends = (undefined && undefined.__extends) || (function () {
 //                    * foreign id
 var UpdatePivotTables = (function (_super) {
     __extends(UpdatePivotTables, _super);
-    function UpdatePivotTables(req, objectJson, localObjectId, pivotConfig, transaction) {
+    function UpdatePivotTables(user, objectJson, localObjectId, pivotConfig, transaction) {
         var _this = _super.call(this) || this;
-        _this.req = req;
+        _this.user = user;
         _this.objectJson = objectJson;
         _this.localObjectId = localObjectId;
         _this.pivotConfig = pivotConfig;
@@ -1024,7 +1024,7 @@ var UpdatePivotTables = (function (_super) {
             // 1.  Fetch all objects currently in pivot table
             var pivotQuery = {};
             pivotQuery[this.pivotConfig.pivotKeyLocalItemId] = this.localObjectId;
-            return new this.pivotConfig.pivotModel().where(pivotQuery).fetchAllForUser(this.req.user)
+            return new this.pivotConfig.pivotModel().where(pivotQuery).fetchAllForUser(this.user)
                 .then(function (currentPivotEntries) {
                 var foreignObjectsToAdd = [];
                 var pivotEntriesToRemove = [];
@@ -1054,8 +1054,8 @@ var UpdatePivotTables = (function (_super) {
                 });
                 // console.log('We need to add ' + foreignObjectsToAdd.length + ' entries and remove ' + pivotEntriesToRemove.length + ' entries.');
                 return Promise.all([
-                    createPivotEntries(_this.req.user, _this.localObjectId, _this.pivotConfig, foreignObjectsToAdd, _this.transaction),
-                    removePivotEntries(_this.req.user, _this.pivotConfig, pivotEntriesToRemove, _this.transaction)
+                    createPivotEntries(_this.user, _this.localObjectId, _this.pivotConfig, foreignObjectsToAdd, _this.transaction),
+                    removePivotEntries(_this.user, _this.pivotConfig, pivotEntriesToRemove, _this.transaction)
                 ]);
             })
                 .then(function () {

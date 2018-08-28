@@ -12,7 +12,9 @@ import { Response } from 'express';
 import * as e from "express";
 import { IUser } from "ts-postgres-model";
 import { Collection } from 'bookshelf';
+import { Transaction } from 'knex';
 import { Transaction } from "knex";
+import { IPostgresModelClass, IUser, PostgresModel } from "ts-postgres-model";
 
 /**
     * Default GET by ID
@@ -133,7 +135,7 @@ export interface IPivotObject {
     id: number;
 }
 export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
-    constructor(req: IUserRequest, objectJson: any, localObjectId: any, pivotConfig: IPivotConfig<T>, transaction?: Transaction | undefined);
+    constructor(user: IUser, objectJson: any, localObjectId: any, pivotConfig: IPivotConfig<T>, transaction?: Transaction | undefined);
     run(): Promise<void>;
 }
 

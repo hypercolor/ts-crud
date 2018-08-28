@@ -1,6 +1,5 @@
 import { Handler } from "../handler";
 import { IPostgresModelClass, IUser, PostgresModel } from "ts-postgres-model";
-import { IUserRequest } from "../../IUserRequest";
 import { Transaction } from "knex";
 
 
@@ -26,7 +25,7 @@ export interface IPivotObject {
 export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
 
 
-  constructor(private req: IUserRequest, private objectJson: any, private localObjectId: any, private pivotConfig: IPivotConfig<T>, private transaction?: Transaction){
+  constructor(private user: IUser, private objectJson: any, private localObjectId: any, private pivotConfig: IPivotConfig<T>, private transaction?: Transaction){
     super();
   }
 
@@ -49,7 +48,7 @@ export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
       const pivotQuery: any = {};
       pivotQuery[this.pivotConfig.pivotKeyLocalItemId] = this.localObjectId;
 
-      return new this.pivotConfig.pivotModel().where(pivotQuery).fetchAllForUser(this.req.user)
+      return new this.pivotConfig.pivotModel().where(pivotQuery).fetchAllForUser(this.user)
       .then(currentPivotEntries => {
 
         const foreignObjectsToAdd: Array<IPivotObject> = [];
@@ -88,8 +87,8 @@ export class UpdatePivotTables<T extends PostgresModel<T>> extends Handler {
         // console.log('We need to add ' + foreignObjectsToAdd.length + ' entries and remove ' + pivotEntriesToRemove.length + ' entries.');
 
         return Promise.all([
-          createPivotEntries(this.req.user, this.localObjectId, this.pivotConfig, foreignObjectsToAdd, this.transaction),
-          removePivotEntries(this.req.user, this.pivotConfig, pivotEntriesToRemove, this.transaction)
+          createPivotEntries(this.user, this.localObjectId, this.pivotConfig, foreignObjectsToAdd, this.transaction),
+          removePivotEntries(this.user, this.pivotConfig, pivotEntriesToRemove, this.transaction)
         ]);
 
       })
