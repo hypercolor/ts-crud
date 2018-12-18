@@ -21,9 +21,9 @@ export class CreateObjectFromJson<T extends PostgresModel<T>> extends Handler {
     return Promise.resolve()
       .then(() => {
         if (this.transaction) {
-          return object.updateWithParams(this.jsonObject)
-        } else {
           return object.updateWithParams(this.jsonObject, { transacting: this.transaction })
+        } else {
+          return object.updateWithParams(this.jsonObject)
         }
       })
       .then(savedObject => {

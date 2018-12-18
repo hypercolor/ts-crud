@@ -218,8 +218,7 @@ var CrudHandlers = (function () {
         }
     };
     CrudHandlers.getObjectById = function (req, model, objectId) {
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, true).run()
-            .then(function (object) {
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, true).run().then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
             }
@@ -264,7 +263,8 @@ var CrudHandlers = (function () {
     };
     CrudHandlers.deleteObject = function (req, model, objectId) {
         var object;
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run()
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false)
+            .run()
             .then(function (o) {
             object = o;
             if (object === null) {
@@ -279,8 +279,7 @@ var CrudHandlers = (function () {
         });
     };
     CrudHandlers.setObjectDeleted = function (req, model, objectId) {
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run()
-            .then(function (object) {
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run().then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
             }
@@ -291,8 +290,7 @@ var CrudHandlers = (function () {
         });
     };
     CrudHandlers.setObjectUndeleted = function (req, model, objectId) {
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run()
-            .then(function (object) {
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run().then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
             }
@@ -717,10 +715,10 @@ var CreateObjectFromJson = (function (_super) {
         return Promise.resolve()
             .then(function () {
             if (_this.transaction) {
-                return object.updateWithParams(_this.jsonObject);
+                return object.updateWithParams(_this.jsonObject, { transacting: _this.transaction });
             }
             else {
-                return object.updateWithParams(_this.jsonObject, { transacting: _this.transaction });
+                return object.updateWithParams(_this.jsonObject);
             }
         })
             .then(function (savedObject) {
@@ -780,8 +778,7 @@ var FetchObject = (function (_super) {
     FetchObject.prototype.run = function () {
         var _this = this;
         if (this.allowQueryPopulation && this.populationString) {
-            return validateFetchOptions(this.model, this.populationString)
-                .then(function (fetchOptions) {
+            return validateFetchOptions(this.model, this.populationString).then(function (fetchOptions) {
                 fetchOptions.forEach(function (option) {
                     _this.fetchParams.withRelated.push(option);
                 });
@@ -814,13 +811,12 @@ function validateFetchOptions(model, fetchOptionsString) {
         return Promise.resolve([]);
     }
     else {
-        return parseFetchOptions(fetchOptionsString)
-            .then(function (fetchOptions) {
+        return parseFetchOptions(fetchOptionsString).then(function (fetchOptions) {
             if (typeof fetchOptions === 'string') {
                 if (!isValidRelationship(model, fetchOptions)) {
                     return Promise.reject({
                         code: 400,
-                        error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOptions
+                        error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOptions,
                     });
                 }
                 else {
@@ -832,14 +828,13 @@ function validateFetchOptions(model, fetchOptionsString) {
                     if (!isValidRelationship(model, fetchOption)) {
                         return Promise.reject({
                             code: 400,
-                            error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOption
+                            error: 'Invalid population for ' + model.constructor.name + ': ' + fetchOption,
                         });
                     }
                     else {
                         return Promise.resolve();
                     }
-                }))
-                    .then(function () {
+                })).then(function () {
                     return Promise.resolve(fetchOptions);
                 });
             }
@@ -936,7 +931,8 @@ var UpdateObjectFromJson = (function (_super) {
             return new _create_object_from_json__WEBPACK_IMPORTED_MODULE_1__["CreateObjectFromJson"](this.model, this.jsonObject, this.transaction, this.populationString).run();
         }
         else {
-            return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](this.model, this.jsonObject.id, false).run()
+            return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](this.model, this.jsonObject.id, false)
+                .run()
                 .then(function (object) {
                 if (object === null) {
                     return Promise.reject({ code: 404, error: _this.model.instanceName + ' not found: ' + _this.jsonObject.id });
