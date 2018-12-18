@@ -1,123 +1,151 @@
-
-
-import {Collection} from 'bookshelf';
-import {Transaction} from 'knex';
+import { Collection } from 'bookshelf'
+import { Transaction } from 'knex'
 // import {IUserRequest} from '../../util/auth';
 // import * as e from "express";
-import { IPostgresModelClass, PostgresModel } from "ts-postgres-model";
-import {PromiseQueue} from './promise_queue';
-import { IUserRequest } from "./IUserRequest";
-import { EUpdateType, UpdateObjectFromJson } from "./handlers/shared/update-object-from-json";
-import { CreateObjectFromJson } from "./handlers/shared/create-object-from-json";
-import { FetchObject } from "./handlers/shared/fetch-object";
-
-
+import { IPostgresModelClass, PostgresModel } from 'ts-postgres-model'
+import { PromiseQueue } from './promise_queue'
+import { IUserRequest } from './IUserRequest'
+import { EUpdateType, UpdateObjectFromJson } from './handlers/shared/update-object-from-json'
+import { CreateObjectFromJson } from './handlers/shared/create-object-from-json'
+import { FetchObject } from './handlers/shared/fetch-object'
 
 export class CrudHandlers {
-
-
-
-
   public static postFromRequestBody<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>) {
     if (req.body.constructor === Array) {
-      const queue = new PromiseQueue(1);
-      return queue.runAllPromiseFunctions(req.body.map((jsonObject: any) => {
-        return () => {
-          return new CreateObjectFromJson(model, jsonObject, req.user).run();
-        };
-      }));
+      const queue = new PromiseQueue(1)
+      return queue.runAllPromiseFunctions(
+        req.body.map((jsonObject: any) => {
+          return () => {
+            return new CreateObjectFromJson(model, jsonObject).run()
+          }
+        })
+      )
     } else {
-      return new CreateObjectFromJson(model, req.body, req.user).run();
+      return new CreateObjectFromJson(model, req.body).run()
     }
   }
 
-  public static getObjectById<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T> {
-    return new FetchObject(req.user, model, objectId, true).run()
-    .then((object: T) => {
+  public static getObjectById<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    objectId: number
+  ): Promise<T> {
+    return new FetchObject(model, objectId, true).run().then((object: T) => {
       if (object === null) {
-        return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + objectId});
+        return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId })
       } else {
-        return Promise.resolve(object);
-      }
-    });
-  }
-
-
-  public static putObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction) {
-    req.body.id = objectId;
-    return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PUT, transaction).run();
-  }
-
-
-  public static patchObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction) {
-    req.body.id = objectId;
-    return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PATCH, transaction).run();
-  }
-
-  public static putObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, transaction?: Transaction): Promise<T | Collection<T>> {
-    if (req.body.constructor === Array) {
-      const queue = new PromiseQueue(1);
-      return queue.runAllPromiseFunctions(req.body.map((jsonObject: any) => {
-        return () => {
-          return new UpdateObjectFromJson(model, jsonObject, req.user, EUpdateType.PUT, transaction).run();
-        };
-      }));
-    } else {
-      return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PUT, transaction).run();
-    }
-  }
-
-  public static patchObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, transaction?: Transaction): Promise<T | Collection<T>> {
-    if (req.body.constructor === Array) {
-      const queue = new PromiseQueue(1);
-      return queue.runAllPromiseFunctions(req.body.map((jsonObject: any) => {
-        return () => {
-          return new UpdateObjectFromJson(model, jsonObject, req.user, EUpdateType.PATCH, transaction).run();
-        };
-      }));
-    } else {
-      return new UpdateObjectFromJson(model, req.body, req.user, EUpdateType.PATCH, transaction).run();
-    }
-  }
-
-  public static deleteObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number) {
-    let object;
-    return new FetchObject(req.user, model, objectId, false).run()
-    .then((o: T) => {
-      object = o;
-      if (object === null) {
-        return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + objectId});
-      } else {
-        return object.destroyForUser(req.user);
+        return Promise.resolve(object)
       }
     })
-    .then(() => {
-      return Promise.resolve();
-    });
   }
 
-  public static setObjectDeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number) {
-    return new FetchObject(req.user, model, objectId, false).run()
-    .then((object: T) => {
-      if (object === null) {
-        return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + objectId});
-      } else {
-        object.deleted = true;
-        return object.saveForUser(req.user);
-      }
-    });
+  public static putObject<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    objectId: number,
+    transaction?: Transaction
+  ) {
+    req.body.id = objectId
+    return new UpdateObjectFromJson(model, req.body, EUpdateType.PUT, transaction).run()
   }
 
-  public static setObjectUndeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number) {
-    return new FetchObject(req.user, model, objectId, false).run()
-    .then((object: T) => {
+  public static patchObject<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    objectId: number,
+    transaction?: Transaction
+  ) {
+    req.body.id = objectId
+    return new UpdateObjectFromJson(model, req.body, EUpdateType.PATCH, transaction).run()
+  }
+
+  public static putObjects<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    transaction?: Transaction
+  ): Promise<T | Collection<T>> {
+    if (req.body.constructor === Array) {
+      const queue = new PromiseQueue(1)
+      return queue.runAllPromiseFunctions(
+        req.body.map((jsonObject: any) => {
+          return () => {
+            return new UpdateObjectFromJson(model, jsonObject, EUpdateType.PUT, transaction).run()
+          }
+        })
+      )
+    } else {
+      return new UpdateObjectFromJson(model, req.body, EUpdateType.PUT, transaction).run()
+    }
+  }
+
+  public static patchObjects<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    transaction?: Transaction
+  ): Promise<T | Collection<T>> {
+    if (req.body.constructor === Array) {
+      const queue = new PromiseQueue(1)
+      return queue.runAllPromiseFunctions(
+        req.body.map((jsonObject: any) => {
+          return () => {
+            return new UpdateObjectFromJson(model, jsonObject, EUpdateType.PATCH, transaction).run()
+          }
+        })
+      )
+    } else {
+      return new UpdateObjectFromJson(model, req.body, EUpdateType.PATCH, transaction).run()
+    }
+  }
+
+  public static deleteObject<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    objectId: number
+  ) {
+    let object
+    return new FetchObject(model, objectId, false)
+      .run()
+      .then((o: T) => {
+        object = o
+        if (object === null) {
+          return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId })
+        } else {
+          return object.destroyForUser(req.user)
+        }
+      })
+      .then(() => {
+        return Promise.resolve()
+      })
+  }
+
+  public static setObjectDeleted<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    objectId: number
+  ) {
+    return new FetchObject(model, objectId, false).run().then((object: T) => {
       if (object === null) {
-        return Promise.reject({code: 404, error: model.instanceName + ' not found: ' + objectId});
+        return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId })
       } else {
-        object.deleted = false;
-        return object.saveForUser(req.user);
+        object.deleted = true
+        return object.saveForUser(req.user)
       }
-    });
+    })
+  }
+
+  public static setObjectUndeleted<T extends PostgresModel<T>>(
+    req: IUserRequest,
+    model: IPostgresModelClass<T>,
+    objectId: number
+  ) {
+    return new FetchObject(model, objectId, false).run().then((object: T) => {
+      if (object === null) {
+        return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId })
+      } else {
+        object.deleted = false
+        return object.saveForUser(req.user)
+      }
+    })
   }
 
   // public static fetchObjectForRequest<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, id: number, fetchParams?: any) {
@@ -125,7 +153,6 @@ export class CrudHandlers {
   //   return query.fetchForUser(req.user, fetchParams);
   // }
 }
-
 
 /**
  * Worker method for PUT
@@ -209,4 +236,3 @@ export class CrudHandlers {
 //   let query = new model().where({id});
 //   return query.fetchForUser(req, fetchParams);
 // }
-

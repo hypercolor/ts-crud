@@ -209,16 +209,16 @@ var CrudHandlers = (function () {
             var queue = new _promise_queue__WEBPACK_IMPORTED_MODULE_0__["PromiseQueue"](1);
             return queue.runAllPromiseFunctions(req.body.map(function (jsonObject) {
                 return function () {
-                    return new _handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_2__["CreateObjectFromJson"](model, jsonObject, req.user).run();
+                    return new _handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_2__["CreateObjectFromJson"](model, jsonObject).run();
                 };
             }));
         }
         else {
-            return new _handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_2__["CreateObjectFromJson"](model, req.body, req.user).run();
+            return new _handlers_shared_create_object_from_json__WEBPACK_IMPORTED_MODULE_2__["CreateObjectFromJson"](model, req.body).run();
         }
     };
     CrudHandlers.getObjectById = function (req, model, objectId) {
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req.user, model, objectId, true).run()
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, true).run()
             .then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
@@ -230,23 +230,23 @@ var CrudHandlers = (function () {
     };
     CrudHandlers.putObject = function (req, model, objectId, transaction) {
         req.body.id = objectId;
-        return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req.user, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
+        return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
     };
     CrudHandlers.patchObject = function (req, model, objectId, transaction) {
         req.body.id = objectId;
-        return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req.user, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
+        return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
     };
     CrudHandlers.putObjects = function (req, model, transaction) {
         if (req.body.constructor === Array) {
             var queue = new _promise_queue__WEBPACK_IMPORTED_MODULE_0__["PromiseQueue"](1);
             return queue.runAllPromiseFunctions(req.body.map(function (jsonObject) {
                 return function () {
-                    return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, jsonObject, req.user, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
+                    return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, jsonObject, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
                 };
             }));
         }
         else {
-            return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req.user, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
+            return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PUT, transaction).run();
         }
     };
     CrudHandlers.patchObjects = function (req, model, transaction) {
@@ -254,17 +254,17 @@ var CrudHandlers = (function () {
             var queue = new _promise_queue__WEBPACK_IMPORTED_MODULE_0__["PromiseQueue"](1);
             return queue.runAllPromiseFunctions(req.body.map(function (jsonObject) {
                 return function () {
-                    return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, jsonObject, req.user, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
+                    return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, jsonObject, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
                 };
             }));
         }
         else {
-            return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, req.user, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
+            return new _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["UpdateObjectFromJson"](model, req.body, _handlers_shared_update_object_from_json__WEBPACK_IMPORTED_MODULE_1__["EUpdateType"].PATCH, transaction).run();
         }
     };
     CrudHandlers.deleteObject = function (req, model, objectId) {
         var object;
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req.user, model, objectId, false).run()
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run()
             .then(function (o) {
             object = o;
             if (object === null) {
@@ -279,7 +279,7 @@ var CrudHandlers = (function () {
         });
     };
     CrudHandlers.setObjectDeleted = function (req, model, objectId) {
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req.user, model, objectId, false).run()
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run()
             .then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
@@ -291,7 +291,7 @@ var CrudHandlers = (function () {
         });
     };
     CrudHandlers.setObjectUndeleted = function (req, model, objectId) {
-        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](req.user, model, objectId, false).run()
+        return new _handlers_shared_fetch_object__WEBPACK_IMPORTED_MODULE_3__["FetchObject"](model, objectId, false).run()
             .then(function (object) {
             if (object === null) {
                 return Promise.reject({ code: 404, error: model.instanceName + ' not found: ' + objectId });
@@ -702,11 +702,10 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var CreateObjectFromJson = (function (_super) {
     __extends(CreateObjectFromJson, _super);
-    function CreateObjectFromJson(model, jsonObject, requestingUser, transaction, populationString) {
+    function CreateObjectFromJson(model, jsonObject, transaction, populationString) {
         var _this = _super.call(this) || this;
         _this.model = model;
         _this.jsonObject = jsonObject;
-        _this.requestingUser = requestingUser;
         _this.transaction = transaction;
         _this.populationString = populationString;
         _this.jsonObject = jsonObject || {};
@@ -718,10 +717,10 @@ var CreateObjectFromJson = (function (_super) {
         return Promise.resolve()
             .then(function () {
             if (_this.transaction) {
-                return object.updateWithParams(_this.jsonObject, _this.requestingUser);
+                return object.updateWithParams(_this.jsonObject);
             }
             else {
-                return object.updateWithParams(_this.jsonObject, _this.requestingUser, { transacting: _this.transaction });
+                return object.updateWithParams(_this.jsonObject, { transacting: _this.transaction });
             }
         })
             .then(function (savedObject) {
@@ -729,7 +728,7 @@ var CreateObjectFromJson = (function (_super) {
                 return Promise.resolve(savedObject);
             }
             else {
-                return new _fetch_object__WEBPACK_IMPORTED_MODULE_1__["FetchObject"](_this.requestingUser, _this.model, _this.jsonObject.id, true, _this.populationString).run();
+                return new _fetch_object__WEBPACK_IMPORTED_MODULE_1__["FetchObject"](_this.model, _this.jsonObject.id, true, _this.populationString).run();
             }
         });
     };
@@ -765,9 +764,8 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var FetchObject = (function (_super) {
     __extends(FetchObject, _super);
-    function FetchObject(requestingUser, model, objectId, allowQueryPopulation, fetchParams, populationString) {
+    function FetchObject(model, objectId, allowQueryPopulation, fetchParams, populationString) {
         var _this = _super.call(this) || this;
-        _this.requestingUser = requestingUser;
         _this.model = model;
         _this.objectId = objectId;
         _this.allowQueryPopulation = allowQueryPopulation;
@@ -795,7 +793,10 @@ var FetchObject = (function (_super) {
         }
     };
     FetchObject.prototype.doQuery = function () {
-        return new this.model().where({ id: this.objectId }).fetchForUser(this.requestingUser, this.fetchParams);
+        var _this = this;
+        return Promise.resolve().then(function () {
+            return new _this.model().where({ id: _this.objectId }).fetch(_this.fetchParams);
+        });
     };
     return FetchObject;
 }(_handler__WEBPACK_IMPORTED_MODULE_0__["Handler"]));
@@ -920,11 +921,10 @@ var EUpdateType;
 })(EUpdateType = EUpdateType || (EUpdateType = {}));
 var UpdateObjectFromJson = (function (_super) {
     __extends(UpdateObjectFromJson, _super);
-    function UpdateObjectFromJson(model, jsonObject, requestingUser, updateType, transaction, populationString) {
+    function UpdateObjectFromJson(model, jsonObject, updateType, transaction, populationString) {
         var _this = _super.call(this) || this;
         _this.model = model;
         _this.jsonObject = jsonObject;
-        _this.requestingUser = requestingUser;
         _this.updateType = updateType;
         _this.transaction = transaction;
         _this.populationString = populationString;
@@ -933,10 +933,10 @@ var UpdateObjectFromJson = (function (_super) {
     UpdateObjectFromJson.prototype.run = function () {
         var _this = this;
         if (this.jsonObject.id === undefined || this.jsonObject.id === '') {
-            return new _create_object_from_json__WEBPACK_IMPORTED_MODULE_1__["CreateObjectFromJson"](this.model, this.jsonObject, this.requestingUser, this.transaction, this.populationString).run();
+            return new _create_object_from_json__WEBPACK_IMPORTED_MODULE_1__["CreateObjectFromJson"](this.model, this.jsonObject, this.transaction, this.populationString).run();
         }
         else {
-            return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](this.requestingUser, this.model, this.jsonObject.id, false).run()
+            return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](this.model, this.jsonObject.id, false).run()
                 .then(function (object) {
                 if (object === null) {
                     return Promise.reject({ code: 404, error: _this.model.instanceName + ' not found: ' + _this.jsonObject.id });
@@ -949,10 +949,10 @@ var UpdateObjectFromJson = (function (_super) {
                         });
                     }
                     if (_this.transaction) {
-                        return object.updateWithParams(_this.jsonObject, _this.requestingUser, { transacting: _this.transaction });
+                        return object.updateWithParams(_this.jsonObject, { transacting: _this.transaction });
                     }
                     else {
-                        return object.updateWithParams(_this.jsonObject, _this.requestingUser);
+                        return object.updateWithParams(_this.jsonObject);
                     }
                 }
             })
@@ -961,7 +961,7 @@ var UpdateObjectFromJson = (function (_super) {
                     return Promise.resolve(object);
                 }
                 else {
-                    return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](_this.requestingUser, _this.model, _this.jsonObject.id, true, _this.populationString).run();
+                    return new _fetch_object__WEBPACK_IMPORTED_MODULE_2__["FetchObject"](_this.model, _this.jsonObject.id, true, _this.populationString).run();
                 }
             });
         }
