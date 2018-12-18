@@ -6702,9 +6702,9 @@ ts-loader@4.2.0:
     micromatch "^3.1.4"
     semver "^5.0.1"
 
-ts-postgres-model@0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/ts-postgres-model/-/ts-postgres-model-0.2.2.tgz#3b87f863d749e8bbceca3de400beb42ff3daa6ab"
+ts-postgres-model@0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/ts-postgres-model/-/ts-postgres-model-0.2.3.tgz#118e309abdd3621b255f73ce17b6de30ecec8613"
   dependencies:
     "@types/pluralize" "0.0.28"
     bluebird "3.5.1"
