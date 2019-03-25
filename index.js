@@ -12,9 +12,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
-/******/ 	// object to store loaded and loading wasm modules
-/******/ 	var installedWasmModules = {};
-/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/
@@ -49,17 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
 /******/ 	};
 /******/
 /******/ 	// define __esModule on exports
 /******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
 /******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -76,9 +88,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-/******/
-/******/ 	// object with all compiled WebAssembly.Modules
-/******/ 	__webpack_require__.w = {};
 /******/
 /******/
 /******/ 	// Load entry module and return exports
@@ -150,7 +159,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /***/ }),
 
 /***/ "./src/crud-config.ts":
@@ -166,14 +174,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ts-express-controller */ "ts-express-controller");
 /* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(ts_express_controller__WEBPACK_IMPORTED_MODULE_0__);
 
-
-var CrudConfig = (function () {
+var CrudConfig = /** @class */ (function () {
     function CrudConfig() {
     }
-    CrudConfig.setControllerConfig = function (name, description, version) {
-        ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageName = name;
-        ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageDescription = description;
-        ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["ControllerConfig"].packageConfig.packageVersion = version;
+    CrudConfig.setControllerConfig = function (config) {
+        ts_express_controller__WEBPACK_IMPORTED_MODULE_0__["Controller"].configure(config);
     };
     return CrudConfig;
 }());
@@ -200,8 +205,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-var CrudHandlers = (function () {
+var CrudHandlers = /** @class */ (function () {
     function CrudHandlers() {
     }
     CrudHandlers.postFromRequestBody = function (req, model) {
@@ -410,11 +414,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ts-express-controller */ "ts-express-controller");
 /* harmony import */ var ts_express_controller__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _handlers_get_get_all_objects_handler__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./handlers/get/get-all-objects-handler */ "./src/handlers/get/get-all-objects-handler.ts");
-
 var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -430,7 +436,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 /**
  * Default GET by ID
  */
-var GetRoute = (function (_super) {
+var GetRoute = /** @class */ (function (_super) {
     __extends(GetRoute, _super);
     function GetRoute(_type, idParamName) {
         var _this = _super.call(this, {
@@ -449,7 +455,7 @@ var GetRoute = (function (_super) {
 /**
  * Default POST from request JSON body
  */
-var PostRoute = (function (_super) {
+var PostRoute = /** @class */ (function (_super) {
     __extends(PostRoute, _super);
     function PostRoute(_type) {
         var _this = _super.call(this) || this;
@@ -465,7 +471,7 @@ var PostRoute = (function (_super) {
 /**
  * Default PUT by ID from request JSON body
  */
-var PutByIdRoute = (function (_super) {
+var PutByIdRoute = /** @class */ (function (_super) {
     __extends(PutByIdRoute, _super);
     function PutByIdRoute(_type, idParamName) {
         var _this = _super.call(this, {
@@ -484,7 +490,7 @@ var PutByIdRoute = (function (_super) {
 /**
  * Default PATCH by ID from request JSON body
  */
-var PatchByIdRoute = (function (_super) {
+var PatchByIdRoute = /** @class */ (function (_super) {
     __extends(PatchByIdRoute, _super);
     function PatchByIdRoute(_type, idParamName) {
         var _this = _super.call(this, {
@@ -503,7 +509,7 @@ var PatchByIdRoute = (function (_super) {
 /**
  * Default PUT by ID from request JSON body
  */
-var MultiPutRoute = (function (_super) {
+var MultiPutRoute = /** @class */ (function (_super) {
     __extends(MultiPutRoute, _super);
     function MultiPutRoute(_type) {
         var _this = _super.call(this) || this;
@@ -519,7 +525,7 @@ var MultiPutRoute = (function (_super) {
 /**
  * Default PUT by ID from request JSON body
  */
-var MultiPatchRoute = (function (_super) {
+var MultiPatchRoute = /** @class */ (function (_super) {
     __extends(MultiPatchRoute, _super);
     function MultiPatchRoute(_type) {
         var _this = _super.call(this) || this;
@@ -535,7 +541,7 @@ var MultiPatchRoute = (function (_super) {
 /**
  * Default DELETE by ID
  */
-var DeleteRoute = (function (_super) {
+var DeleteRoute = /** @class */ (function (_super) {
     __extends(DeleteRoute, _super);
     function DeleteRoute(_type, idParamName) {
         var _this = _super.call(this, {
@@ -554,7 +560,7 @@ var DeleteRoute = (function (_super) {
 /**
  * Default Query for all objects of a type
  */
-var QueryRoute = (function (_super) {
+var QueryRoute = /** @class */ (function (_super) {
     __extends(QueryRoute, _super);
     function QueryRoute(_type, fetchParams, _allowDeleted) {
         var _this = _super.call(this) || this;
@@ -569,7 +575,7 @@ var QueryRoute = (function (_super) {
     return QueryRoute;
 }(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
 
-var MarkDeletedRoute = (function (_super) {
+var MarkDeletedRoute = /** @class */ (function (_super) {
     __extends(MarkDeletedRoute, _super);
     function MarkDeletedRoute(_type, idParamName) {
         var _this = _super.call(this, {
@@ -585,7 +591,7 @@ var MarkDeletedRoute = (function (_super) {
     return MarkDeletedRoute;
 }(ts_express_controller__WEBPACK_IMPORTED_MODULE_1__["Controller"]));
 
-var MarkUndeletedRoute = (function (_super) {
+var MarkUndeletedRoute = /** @class */ (function (_super) {
     __extends(MarkUndeletedRoute, _super);
     function MarkUndeletedRoute(_type, idParamName) {
         var _this = _super.call(this, {
@@ -616,11 +622,13 @@ var MarkUndeletedRoute = (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GetAllObjectsHandler", function() { return GetAllObjectsHandler; });
 /* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
-
 var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -628,7 +636,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var GetAllObjectsHandler = (function (_super) {
+var GetAllObjectsHandler = /** @class */ (function (_super) {
     __extends(GetAllObjectsHandler, _super);
     function GetAllObjectsHandler(req, model, fetchParams, allowDeleted) {
         var _this = _super.call(this) || this;
@@ -662,8 +670,7 @@ var GetAllObjectsHandler = (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Handler", function() { return Handler; });
-
-var Handler = (function () {
+var Handler = /** @class */ (function () {
     function Handler() {
     }
     return Handler;
@@ -685,11 +692,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CreateObjectFromJson", function() { return CreateObjectFromJson; });
 /* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
 /* harmony import */ var _fetch_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fetch-object */ "./src/handlers/shared/fetch-object.ts");
-
 var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -698,7 +707,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
-var CreateObjectFromJson = (function (_super) {
+var CreateObjectFromJson = /** @class */ (function (_super) {
     __extends(CreateObjectFromJson, _super);
     function CreateObjectFromJson(model, jsonObject, transaction, populationString) {
         var _this = _super.call(this) || this;
@@ -748,11 +757,13 @@ var CreateObjectFromJson = (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FetchObject", function() { return FetchObject; });
 /* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
-
 var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -760,7 +771,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-var FetchObject = (function (_super) {
+var FetchObject = /** @class */ (function (_super) {
     __extends(FetchObject, _super);
     function FetchObject(model, objectId, allowQueryPopulation, fetchParams, populationString) {
         var _this = _super.call(this) || this;
@@ -895,11 +906,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
 /* harmony import */ var _create_object_from_json__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./create-object-from-json */ "./src/handlers/shared/create-object-from-json.ts");
 /* harmony import */ var _fetch_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fetch-object */ "./src/handlers/shared/fetch-object.ts");
-
 var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -913,8 +926,8 @@ var EUpdateType;
 (function (EUpdateType) {
     EUpdateType[EUpdateType["PUT"] = 0] = "PUT";
     EUpdateType[EUpdateType["PATCH"] = 1] = "PATCH";
-})(EUpdateType = EUpdateType || (EUpdateType = {}));
-var UpdateObjectFromJson = (function (_super) {
+})(EUpdateType || (EUpdateType = {}));
+var UpdateObjectFromJson = /** @class */ (function (_super) {
     __extends(UpdateObjectFromJson, _super);
     function UpdateObjectFromJson(model, jsonObject, updateType, transaction, populationString) {
         var _this = _super.call(this) || this;
@@ -980,11 +993,13 @@ var UpdateObjectFromJson = (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UpdatePivotTables", function() { return UpdatePivotTables; });
 /* harmony import */ var _handler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../handler */ "./src/handlers/handler.ts");
-
 var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -997,7 +1012,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 //    * id            * id                  * id
 //    * "foreigns"    * item id
 //                    * foreign id
-var UpdatePivotTables = (function (_super) {
+var UpdatePivotTables = /** @class */ (function (_super) {
     __extends(UpdatePivotTables, _super);
     function UpdatePivotTables(user, objectJson, localObjectId, pivotConfig, transaction) {
         var _this = _super.call(this) || this;
@@ -1107,8 +1122,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var p_queue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! p-queue */ "p-queue");
 /* harmony import */ var p_queue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(p_queue__WEBPACK_IMPORTED_MODULE_0__);
 
-
-var PromiseQueue = (function () {
+var PromiseQueue = /** @class */ (function () {
     function PromiseQueue(maxConcurrent) {
         this.queue = new p_queue__WEBPACK_IMPORTED_MODULE_0__({ concurrency: maxConcurrent });
     }

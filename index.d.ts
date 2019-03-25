@@ -87,19 +87,31 @@ export interface IUserRequest extends e.Request {
 }
 
 export class CrudHandlers {
-    static postFromRequestBody<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>): Promise<any>;
-    static getObjectById<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
-    static putObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction): Promise<T>;
-    static patchObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction): Promise<T>;
-    static putObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, transaction?: Transaction): Promise<T | Collection<T>>;
-    static patchObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, transaction?: Transaction): Promise<T | Collection<T>>;
-    static deleteObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<void>;
-    static setObjectDeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
-    static setObjectUndeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
+        static postFromRequestBody<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>): Promise<any>;
+        static getObjectById<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
+        static putObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction): Promise<T>;
+        static patchObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number, transaction?: Transaction): Promise<T>;
+        static putObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, transaction?: Transaction): Promise<T | Collection<T>>;
+        static patchObjects<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, transaction?: Transaction): Promise<T | Collection<T>>;
+        static deleteObject<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<void>;
+        static setObjectDeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
+        static setObjectUndeleted<T extends PostgresModel<T>>(req: IUserRequest, model: IPostgresModelClass<T>, objectId: number): Promise<T>;
 }
 
+export interface IControllerFrameworkConfig {
+    instrumentAllErrors: boolean;
+    instrument500Errors: boolean;
+    instrumentErrorRequestBodies: boolean;
+    instrumentErrorRequestBodiesRouteBlacklist: Array<string>;
+    environmentDescriptor: string;
+    packageConfig: {
+        packageName: string;
+        packageDescription: string;
+        packageVersion: string;
+    };
+}
 export class CrudConfig {
-    static setControllerConfig(name: string, description: string, version: string): void;
+    static setControllerConfig(config: IControllerFrameworkConfig): void;
 }
 
 export class GetAllObjectsHandler<T extends PostgresModel<T>> extends Handler {
@@ -109,7 +121,7 @@ export class GetAllObjectsHandler<T extends PostgresModel<T>> extends Handler {
 
 export enum EUpdateType {
     PUT = 0,
-    PATCH = 1,
+    PATCH = 1
 }
 export class UpdateObjectFromJson<T extends PostgresModel<T>> extends Handler {
     constructor(model: IPostgresModelClass<T>, jsonObject: any, updateType: EUpdateType, transaction?: Transaction | undefined, populationString?: string | undefined);
