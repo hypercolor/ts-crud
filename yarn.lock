@@ -130,7 +130,7 @@
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-20.0.2.tgz#86c751121fb53dbd39bb1a08c45083da13f2dc67"
   integrity sha512-r9D5PKnwZiGcxkT7cej+7kq+pobFcCsj5TlWlO+AmlbwIo8u6vCWhGd0DPo8f7ANskwQaQ6vB6GqGN/DUoL3zQ==
 
-"@types/knex@*":
+"@types/knex@*", "@types/knex@0.16.1":
   version "0.16.1"
   resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.16.1.tgz#619678407265c675463c563ed38323461a49515d"
   integrity sha512-54gWD1HWwdVx5iLHaJ1qxH3I6KyBsj5fFqzRpXFn7REWiEB2jwspeVCombNsocSrqPd7IRPqKrsIME7/cD+TFQ==
@@ -7366,10 +7366,10 @@ trim-right@^1.0.1:
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
   integrity sha1-yy4SAwZ+DI3h9hQJS5/kVwTqYAM=
 
-ts-express-controller@0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/ts-express-controller/-/ts-express-controller-0.2.0.tgz#dc50f433db3447e4e807d4fdb0b198fdebac6f44"
-  integrity sha512-PMyrD8wuy6Slrz2Tq7+rs1CGMUHf7QWdqgKcxDdIg8Pah3DmfilUfjMdis1Z+twR+otD/qKZ0Le9TkDMCS8rdA==
+ts-express-controller@0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/ts-express-controller/-/ts-express-controller-0.2.1.tgz#04cad7819407765b590c2fe4947e95dc6863a3ec"
+  integrity sha512-Adw/T8vezA5TmjwjGJG4Aj2tGFIv7jtRlK/OXnzYQRBEaGoaya+wGVytFcNKh7TkH5HA0KhpphgUzTTWB+1aNw==
   dependencies:
     "@types/bluebird" "3.5.20"
     "@types/csv-stringify" "1.4.2"

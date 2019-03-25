@@ -1,6 +1,7 @@
 import { Controller } from 'ts-express-controller'
 
 export interface IControllerFrameworkConfig {
+  instrumentAllRequests: boolean
   instrumentAllErrors: boolean
   instrument500Errors: boolean
   instrumentErrorRequestBodies: boolean

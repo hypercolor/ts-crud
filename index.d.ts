@@ -99,6 +99,7 @@ export class CrudHandlers {
 }
 
 export interface IControllerFrameworkConfig {
+    instrumentAllRequests: boolean;
     instrumentAllErrors: boolean;
     instrument500Errors: boolean;
     instrumentErrorRequestBodies: boolean;
