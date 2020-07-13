@@ -120,7 +120,7 @@
     "pluralize": "7.0.0",
     "prettier": "1.16.4",
     "shx": "0.2.2",
-    "standard-version": "4.2.0",
+    "standard-version": "8.0.1",
     "strip-json-comments-cli": "1.0.1",
     "ts-jest": "24.0.0",
     "ts-loader": "5.3.3",
